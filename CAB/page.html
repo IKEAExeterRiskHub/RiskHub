@@ -553,10 +553,10 @@ async function generateFinalAudit() {
 
         (level.data.checks || []).forEach(check => {
 
-            if (check.result === "PASS")
+            if (check.result === "YES")
                 passCount++;
 
-            if (check.result === "FAIL")
+            if (check.result === "NO")
                 failCount++;
         });
 
@@ -674,8 +674,8 @@ async function generateFinalAudit() {
 
     pdf.setTextColor(0);
 
-    pdf.text("PASS",40,58);
-    pdf.text("FAIL",103,58);
+    pdf.text("YES",40,58);
+    pdf.text("NO",103,58);
     pdf.text("ISSUES",163,58);
 
     pdf.setFontSize(12);
@@ -804,7 +804,7 @@ levels.forEach(level => {
             y
         );
 
-        if (check.result === "PASS") {
+        if (check.result === "YES") {
             pdf.setTextColor(0, 140, 0);
         } else {
             pdf.setTextColor(200, 0, 0);
