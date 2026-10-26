@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Lighting</title>
+
+<style>
+
+*{
+    font-family:Arial,sans-serif;
+}
+
+body{
+    margin:0;
+    background:#0058A3;
+}
+
+header{
+    position:relative;
+    padding:15px;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    background:white;
+    padding:15px;
+    max-width:900px;
+    margin:auto;
+}
+
+.date-container{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.date-container input{
+    width:180px;
+    margin:auto;
+    display:block;
+    text-align:center;
+}
+
+h2{
+    background:#FFDA1A;
+    padding:8px;
+    text-align:center;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:10px;
+}
+
+td,
+th{
+    border:1px solid black;
+    padding:8px;
+    text-align:center;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:6px;
+    box-sizing:border-box;
+}
+
+textarea{
+    height:60px;
+}
+
+.check{
+    transform:scale(1.2);
+}
+
+.radio-cell{
+    text-align:center;
+}
+
+.radio-inline{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin:0 5px;
+}
+
+#progressWrap{
+    height:20px;
+    background:#ccc;
+    margin:10px 0;
+}
+
+#progress{
+    height:100%;
+    width:0%;
+    background:green;
+    transition:.3s;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+#printBtn,
+#pdfBtn{
+    background:#FFDA1A;
+    color:#0058A3;
+    border:none;
+    font-weight:bold;
+}
+
+#progress {
+    max-width: 100%;
+}
+
+#printBtn:disabled,
+#pdfBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+#nextBtn{
+    background:#0058A3;
+    color:white;
+    border:none;
+    font-weight:bold;
+}
+
+#nextBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+canvas{
+    border:2px solid #000;
+    background:#fff;
+    width:100%;
+    max-width:800px;
+}
+header img{
+    max-height:80px;
+    display:block;
+    margin:0 auto 10px auto;
+}
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+</head>
+
+<body>
+
+<header>
+    <img
+        src="logo.webp"
+        alt="Logo"
+        style="max-height:80px;display:block;margin:0 auto 10px auto;">
+
+    <h1>
+        Lighting
+    </h1>
+
+    <div id="timer"></div>
+</header>
+
+<div class="container">
+
+    <div class="date-container">
+
+        <label for="date">
+            <strong>Date</strong>
+        </label>
+
+        <br><br>
+
+        <input
+            type="date"
+            id="date"
+            readonly>
+
+    </div>
+
+   <h2>Lighting</h2>
+
+<table id="walks">
+
+    <tr>
+    <th>Question</th>
+    <th>Pass ✔</th>
+    <th>Fail ✖</th>
+    <th>N/A</th>
+   </tr>
+
+</table>
+
+    <div id="progressWrap">
+
+        <div id="progress"></div>
+
+    </div>
+<h2>Co-Worker Names & Other Details</h2>
+
+<div style="margin-bottom:20px;">
+    <label for="coworkerDetails">
+        <strong>Enter Co-Worker Name(s) and any other Details</strong>
+    </label>
+
+    <textarea
+        id="coworkerDetails"
+        placeholder="Enter co-worker names and any relevant details here..."
+        style="height:100px;">
+    </textarea>
+</div>
+
+    <h2>
+        Reportable Issues
+        (Complete if required)
+    </h2>
+
+    <table id="deviationTable">
+
+        <tr>
+
+            <th>Location</th>
+            <th>Issue</th>
+            <th>Contact</th>
+            <th>Resolved</th>
+<th>Photo</th>
+
+        </tr>
+
+    </table>
+
+    <button onclick="addDeviation()">
+
+    + Add Issue
+
+</button>
+
+<button
+    id="nextBtn"
+    onclick="nextTask()"
+    disabled>
+
+    Next
+
+</button>
+     
+
+</div>
+
+
+<script>
+
+/* DATE */
+
+document.getElementById("date").value =
+new Date().toISOString().split("T")[0];
+
+/* TIMER */
+
+let time = 4 * 60 * 60;
+
+function runTimer(){
+
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
+    const s = time % 60;
+
+    document.getElementById("timer").innerText =
+    `Time remaining: ${h}h ${m}m ${s}s`;
+
+    if(time > 0){
+
+        time--;
+
+        setTimeout(
+            runTimer,
+            1000
+        );
+
+    }else{
+
+        document.getElementById("timer").innerText =
+        "Time Complete";
+
+    }
+
+}
+
+runTimer();
+
+/* QUESTIONS */
+
+const sections = [
+
+{
+    title: "Fire Prevention",
+    questions: [
+        "Are adequate safety distances maintained to prevent damage or ignition if heat sources are mounted in storage or display areas?",
+        "Are cable ladders, cable trays, cable ducts and electrical cables never subjected to additional weights or used for any kind of storage?",
+        "Are wicks cut off from displayed candles that have been removed from packaging?",
+        "Are candles displayed according to stated safety requirements (Distance) shown on product communication?",
+        "Are coffee machines and warming hot plates used outside restaurant areas placed on fire resistant platforms?",
+        "Are multiple plug extension cords not interconnected?",
+        "Have extension sockets not had maximum electrical load exceeded? List total Amps Load plugged in versus capacity",
+        "Are extension cables feeding power from the ceiling grids to display shelves or storage racking provided with single socket and protected against mechanical damage?",
+        "Is there ample space between sprinkler heads and goods? Is there adequate flue spaces?",
+        "Are sprinkler heads unobstructed and not impaired?",
+	"Is it ensured that nothing is suspended from sprinkler system pipes or heads?",
+	"Is the firefighting equipment clearly marked and easily accessible?",
+	"Is walking distance to portable fire extinguishers (manual) not exceeding 25m/85f?",
+	"Are manual call points never obstructed by view or access?",
+	"Are combustible waste materials removed from inside the store every day at regular intervals throughout the day?",
+
+    ]
+},
+
+{
+    title: "Evacuation",
+    questions: [
+        "Are all emergency exit doors kept unobstructed?",
+        "Are walkways from the main aisles to the emergency exits at least the same width as the exit doors?",
+        "Are emergency exit staircases, tunnels and other evacuation routes kept free from material and other obstructions?",
+        "Are emergency exit signs in customer areas electrically illuminated?",
+        "Are emergency exit signs fully visible and unobstructed by signs, banners and displays?",
+        "Is the store equipped with emergency exit signs and is it possible to see two different signs from any point in the main aisle?",
+        "Are co-workers aware of what to do with Bluetooth speakers in the event of an evacuation? (turn off or turn volume down) Name co-worker checked",
+        "Are co-workers aware of what to do and respond correctly when a CODE 1000 Message activated? Name co-worker checked",
+
+    ]
+},
+
+{
+    title: "Accidents",
+    questions: [
+        "Are all bespoke carpentry solutions safe and free from Damage? Check for signs of stress or damage because of over loading?",
+        "Are all areas of Sales floor safely accessible for co-workers without trip hazards?",
+        "Do podiums not pose a stumbling risk?",
+        "Are all products correctly assembled and displayed safely?",
+        "Are all damaged toys or installations replaced or repaired immediately?",
+	"Are all products that include anti-tipping protection also displayed with it installed? Is A7 tag with SECURE IT clearly visible and leaflets available for customers.",
+	"Are anti-slip underlays used under carpets and rugs laying in display areas? List any rugs to be replaced in comments box",
+	"Are damaged display products immediately replaced or repaired?",
+	"Are grid ceilings secured against collapse and are they never overloaded? Is file available for co-worker to reference?",
+	"Are weight limitations for ceiling grid supplied by the country construction department? Is file available for co-worker to reference?",
+	"Do co-workers assigned with decoration or filling always regard weight limitations of ceiling grids, display racks and panels? Is file available for co-worker to check?",
+	"Are sales walls and display fixtures secured against collapse and are they never overloaded? Is file accessible for co-worker to reference?",
+	"Are safety warnings and instructions on products in customer areas adhered to in displaying the product?",
+	"Do the light bulbs in the lamps displayed not exceed the maximum wattage for the lamp?",
+	"Are Build pallets secured with Pallet collars and limited to safe stack height to prevent collapse?",
+	"Is protective safety clothing being worn and proper safety equipment or tools used depending on the work being done? Name co-worker checked in comments box",
+	"Are all small items, qualifying as choke hazards, always kept out of reach for children (at least 1.2m above floor)?",
+	"Are choke hazard materials never present?",
+	"Are knives, sharp objects and dangerous tools displayed at minimum 1.2 m above floor to be out of reach of children?",
+	"Are all shower hoses on display secured to prevent strangulation at multiple points on length of hose?",
+	"Are ladders never left unattended in customer areas?",
+     
+    ]
+},
+
+{
+    title: "Processes",
+    questions: [
+        "Are lost child procedures in place and known to all co-workers? Name co-worker checked in comments box",
+        "Do co-workers know how to support the customer to make FCA complaint about IKANO product - has co-worker got link saved as favourites? Name co-worker checked in comments box",
+        "Is the access to sensitive customer and company data secured against unauthorised access?"
+    ]
+}
+
+];
+
+const walkTable = document.getElementById("walks");
+
+const allQuestions = [];
+
+let questionCounter = 1;
+
+sections.forEach(section => {
+
+    const sectionRow = document.createElement("tr");
+
+    sectionRow.innerHTML = `
+        <th colspan="4"
+            style="background:#0058A3;color:white;text-align:left;">
+            ${section.title}
+        </th>
+    `;
+
+    walkTable.appendChild(sectionRow);
+
+    section.questions.forEach(question => {
+
+        allQuestions.push(question);
+
+        const row = document.createElement("tr");
+
+        
+
+row.innerHTML = `
+    <td>
+        ${question}
+            </td>
+ 
+    <td>
+        <input
+            type="radio"
+            name="check${questionCounter}"
+            value="PASS"
+            onchange="progress()">
+    </td>
+
+    <td>
+        <input
+            type="radio"
+            name="check${questionCounter}"
+            value="FAIL"
+            onchange="progress()">
+    </td>
+
+    <td>
+        <input
+            type="radio"
+            name="check${questionCounter}"
+            value="N/A"
+            onchange="progress()">
+    </td>
+
+   
+`;
+
+        walkTable.appendChild(row);
+
+        questionCounter++;
+
+    });
+
+});
+
+const totalQuestions = questionCounter - 1;
+
+/* PROGRESS */
+
+function progress(){
+
+    let completed = 0;
+
+    for(let i = 1; i <= totalQuestions; i++){
+
+        if(
+            document.querySelector(
+                `input[name="check${i}"]:checked`
+            )
+        ){
+            completed++;
+        }
+
+    }
+
+    const percent =
+        (completed / totalQuestions) * 100;
+
+    document.getElementById("progress").style.width =
+        percent + "%";
+
+    document.getElementById("nextBtn").disabled =
+        completed !== totalQuestions;
+
+}
+
+/* ADD ISSUE */
+
+function addDeviation(){
+
+    const table =
+    document.getElementById(
+        "deviationTable"
+    );
+
+    const rowCount =
+    table.rows.length;
+
+    const row =
+    document.createElement("tr");
+
+    row.innerHTML = `
+        <td>
+            <input
+                type="text"
+                placeholder="Location">
+        </td>
+
+        <td>
+            <textarea
+                placeholder="Issue details"></textarea>
+        </td>
+
+        <td>
+            <input
+                type="text"
+                placeholder="Contact">
+        </td>
+
+        <td>
+
+            <label class="radio-inline">
+                <input
+                    type="radio"
+                    name="resolved${rowCount}"
+                    value="Yes">
+                Yes
+            </label>
+
+            <label class="radio-inline">
+                <input
+                    type="radio"
+                    name="resolved${rowCount}"
+                    value="No">
+                No
+            </label>
+
+        </td>
+
+        <td>
+
+            <input
+                type="file"
+                accept="image/*"
+                capture="environment">
+
+        </td>
+    `;
+
+    table.appendChild(row);
+
+}
+
+/* SAVE AND CONTINUE */
+
+function fileToBase64(file){
+
+    return new Promise((resolve, reject) => {
+
+        if(!file){
+            resolve("");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = e =>
+            resolve(e.target.result);
+
+        reader.onerror = reject;
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+async function nextTask() {
+    const data = {
+        date: document.getElementById("date").value,
+        coworkerDetails: document.getElementById("coworkerDetails").value,
+        checks: [],
+        issues: []
+    };
+
+    for(
+    let i = 1;
+    i <= totalQuestions;
+    i++
+)
+
+{
+
+        const selected =
+        document.querySelector(
+            `input[name="check${i}"]:checked`
+        );
+
+      data.checks.push({
+    question: allQuestions[i - 1],
+    result: selected ? selected.value : ""
+});
+
+    }
+
+    const rows =
+    document.querySelectorAll(
+        "#deviationTable tr"
+    );
+
+    for(
+        let i = 1;
+        i < rows.length;
+        i++
+    ){
+
+        const textInputs =
+        rows[i].querySelectorAll(
+            'input[type="text"]'
+        );
+
+        const issue =
+        rows[i].querySelector(
+            "textarea"
+        );
+
+        const resolved =
+        rows[i].querySelector(
+            'input[type="radio"]:checked'
+        );
+
+        const photo =
+        rows[i].querySelector(
+            'input[type="file"]'
+        );
+
+
+        data.issues.push({
+
+    location:
+    textInputs[0]?.value || "",
+
+    contact:
+    textInputs[1]?.value || "",
+
+    issue:
+    issue?.value || "",
+
+    resolved:
+    resolved?.value || "",
+
+    photo:
+    await fileToBase64(
+        photo?.files[0]
+    )
+
+});
+
+} // closes for loop
+
+localStorage.setItem(
+    "light",
+    JSON.stringify(data)
+);
+
+window.location.href =
+    "org.html";
+
+} // closes nextTask function
+
+</script>
+
+</body>
+</html>

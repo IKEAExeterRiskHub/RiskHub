@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Bistro</title>
+
+<style>
+
+*{
+    font-family:Arial,sans-serif;
+}
+
+body{
+    margin:0;
+    background:#0058A3;
+}
+
+header{
+    position:relative;
+    padding:15px;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    background:white;
+    padding:15px;
+    max-width:900px;
+    margin:auto;
+}
+
+.date-container{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.date-container input{
+    width:180px;
+    margin:auto;
+    display:block;
+    text-align:center;
+}
+
+h2{
+    background:#FFDA1A;
+    padding:8px;
+    text-align:center;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:10px;
+}
+
+td,
+th{
+    border:1px solid black;
+    padding:8px;
+    text-align:center;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:6px;
+    box-sizing:border-box;
+}
+
+textarea{
+    height:60px;
+}
+
+.check{
+    transform:scale(1.2);
+}
+
+.radio-cell{
+    text-align:center;
+}
+
+.radio-inline{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin:0 5px;
+}
+
+#progressWrap{
+    height:20px;
+    background:#ccc;
+    margin:10px 0;
+}
+
+#progress{
+    height:100%;
+    width:0%;
+    background:green;
+    transition:.3s;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+#printBtn,
+#pdfBtn{
+    background:#FFDA1A;
+    color:#0058A3;
+    border:none;
+    font-weight:bold;
+}
+
+#progress {
+    max-width: 100%;
+}
+
+#printBtn:disabled,
+#pdfBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+#nextBtn{
+    background:#0058A3;
+    color:white;
+    border:none;
+    font-weight:bold;
+}
+
+#nextBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+canvas{
+    border:2px solid #000;
+    background:#fff;
+    width:100%;
+    max-width:800px;
+}
+header img{
+    max-height:80px;
+    display:block;
+    margin:0 auto 10px auto;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+</head>
+
+<body>
+
+<header>
+    <img
+        src="logo.webp"
+        alt="Logo"
+        style="max-height:80px;display:block;margin:0 auto 10px auto;">
+
+    <h1>
+        Bistro
+    </h1>
+
+    <div id="timer"></div>
+</header>
+
+<div class="container">
+
+    <div class="date-container">
+
+        <label for="date">
+            <strong>Date</strong>
+        </label>
+
+        <br><br>
+
+        <input
+            type="date"
+            id="date"
+            readonly>
+
+    </div>
+
+    <h2>Bistro</h2>
+
+    <table id="walks">
+
+    <tr>
+    <th>Question</th>
+    <th>Pass ✔</th>
+    <th>Fail ✖</th>
+    <th>N/A</th>
+    </tr>
+
+    </table>
+
+    <div id="progressWrap">
+
+        <div id="progress"></div>
+
+    </div>
+<h2>
+    Co-Worker Details / Comments
+</h2>
+
+<label>
+    <strong>
+        Enter Co-Worker Names, Checks Completed and Any Comments
+    </strong>
+</label>
+
+<textarea
+    id="coworkerDetails"
+    placeholder="Enter co-worker names, checks completed, observations, amps load details, rugs requiring replacement, or any other comments..."
+    style="height:120px;margin-bottom:20px;">
+</textarea>
+
+    <h2>
+        Reportable Issues
+        (Complete if required)
+    </h2>
+
+    <table id="deviationTable">
+
+        <tr>
+
+            <th>Location</th>
+            <th>Issue</th>
+            <th>Contact</th>
+            <th>Resolved</th>
+<th>Photo</th>
+
+        </tr>
+
+    </table>
+
+    <button onclick="addDeviation()">
+
+        + Add Issue
+
+    </button>
+
+    <h2>
+        Auditor Sign Off
+    </h2>
+
+    <label>
+
+        <strong>
+            Auditor Name
+        </strong>
+
+    </label>
+
+    <input
+        type="text"
+        id="auditorName"
+        placeholder="Enter your name">
+
+    <br><br>
+
+    <label>
+
+        <strong>
+            Signature
+        </strong>
+
+    </label>
+
+    <canvas
+        id="signaturePad"
+        width="800"
+        height="200">
+
+    </canvas>
+
+    <button
+        type="button"
+        onclick="clearSignature()">
+
+        Clear Signature
+
+    </button>
+
+    <button
+    id="completeBtn"
+    onclick="completeAuditAndDownload()"
+    disabled>
+
+    Complete Audit & Download PDF
+
+</button>
+
+
+</div>
+
+<script>
+
+/* DATE */
+
+document.getElementById("date").value =
+new Date().toISOString().split("T")[0];
+
+/* TIMER */
+
+let time = 4 * 60 * 60;
+
+function runTimer(){
+
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
+    const s = time % 60;
+
+    document.getElementById("timer").innerText =
+    `Time remaining: ${h}h ${m}m ${s}s`;
+
+    if(time > 0){
+
+        time--;
+
+        setTimeout(
+            runTimer,
+            1000
+        );
+
+    }else{
+
+        document.getElementById("timer").innerText =
+        "Time Complete";
+
+    }
+}
+
+runTimer();
+
+/* QUESTIONS */
+
+const sections = [
+
+{
+    title: "Fire Prevention",
+    questions: [
+        "Are cable ladders, cable trays, cable ducts and electrical cables never subjected to additional weights or used for any kind of storage?",
+        "Are multiple plug extension cords not interconnected?",
+        "Have extension sockets not had maximum electrical load exceeded? List total Amps Load plugged in versus capacity",
+        "Are extension cables feeding power from the ceiling grids to display shelves or storage racking provided with single socket and protected against mechanical damage?",
+        "Are sprinkler heads unobstructed and not impaired?",
+        "Is it ensured that nothing is suspended from sprinkler system pipes or heads?",
+        "Is the firefighting equipment clearly marked and easily accessible?",
+        "Is walking distance to portable fire extinguishers (manual) not exceeding 25m/85f?",
+        "Are manual call points never obstructed by view or access?",
+        "Are combustible waste materials removed from inside the store every day at regular intervals throughout the day?",
+        "Is Kitchen ventilation filters cleaned every 7 days?",
+        "Are fire blankets available in cooking areas?",
+        "Do co-workers understand how to activate Ansul Fire System? Name co-worker checked (x2)",
+        "Are pressurized gas cylinders (full as well as empty) firmly secured against falling?"
+    ]
+},
+
+{
+    title: "Evacuation",
+    questions: [
+        "Are all emergency exit doors kept unobstructed?",
+        "Are walkways from the main aisles to the emergency exits at least the same width as the exit doors?",
+        "Are emergency exit staircases, tunnels and other evacuation routes kept free from material and other obstructions?",
+        "Are emergency exit signs in customer areas electrically illuminated?",
+        "Are emergency exit signs fully visible and unobstructed by signs, banners and displays?",
+        "Is the store equipped with emergency exit signs and is it possible to see two different signs from any point in the main aisle?",
+        "Are co-workers aware of what to do with Bluetooth speakers in the event of an evacuation? (turn off or turn volume down) Name co-worker checked",
+        "Are co-workers aware of what to do and respond correctly when a CODE 1000 Message activated? Name co-worker checked"
+    ]
+},
+
+{
+    title: "Accidents",
+    questions: [
+        "Are all bespoke carpentry solutions safe and free from Damage? Check for signs of stress or damage because of over loading?",
+        "Are all areas of Sales floor safely accessible for customers without trip hazards?",
+        "Do podiums not pose a stumbling risk?",
+        "Are all products correctly assembled and displayed safely?",
+        "Are damaged display products immediately replaced or repaired?",
+        "Is protective safety clothing being worn and proper safety equipment? Name co-worker checked in comments box"
+    ]
+},
+
+{
+    title: "Processes",
+    questions: [
+        "Are lost child procedures in place and known to all co-workers? Name co-worker checked in comments box",
+        "Is the access to sensitive customer and company data secured against unauthorised access?",
+        "Are the established routines regulating the highest amount of cash permitted in a cash till (£300) enforced? Name co-worker checked",
+        "Are receipts always given to customers with every purchase in the IKEA food areas?"
+    ]
+}
+
+];
+
+const walkTable = document.getElementById("walks");
+const allQuestions = [];
+
+let questionCounter = 1;
+
+sections.forEach(section => {
+
+    const sectionRow = document.createElement("tr");
+
+    sectionRow.innerHTML = `
+        <th colspan="4"
+            style="background:#0058A3;color:white;text-align:left;">
+            ${section.title}
+        </th>
+    `;
+
+    walkTable.appendChild(sectionRow);
+
+    section.questions.forEach(question => {
+
+    allQuestions.push(question);
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td style="text-align:left;">
+            ${question}
+        </td>
+
+        <td class="radio-cell">
+            <input
+                type="radio"
+                name="check${questionCounter}"
+                value="PASS"
+                onchange="progress()">
+        </td>
+
+        <td class="radio-cell">
+            <input
+                type="radio"
+                name="check${questionCounter}"
+                value="FAIL"
+                onchange="progress()">
+        </td>
+
+        <td class="radio-cell">
+            <input
+                type="radio"
+                name="check${questionCounter}"
+                value="N/A"
+                onchange="progress()">
+        </td>
+    `;
+
+    walkTable.appendChild(row);
+
+    questionCounter++;
+
+});
+
+});
+
+const totalQuestions = questionCounter - 1;
+
+/* PROGRESS */
+
+function progress() {
+
+    let completed = 0;
+
+    for (let i = 1; i <= totalQuestions; i++) {
+
+        if (
+            document.querySelector(
+                `input[name="check${i}"]:checked`
+            )
+        ) {
+            completed++;
+        }
+
+    }
+
+    const percent =
+        (completed / totalQuestions) * 100;
+
+    document.getElementById("progress").style.width =
+        percent + "%";
+
+    document.getElementById("completeBtn").disabled =
+        completed !== totalQuestions;
+
+}
+
+
+/* ADD ISSUE */
+
+function addDeviation(){
+
+    const table =
+    document.getElementById(
+        "deviationTable"
+    );
+
+    const rowCount =
+    table.rows.length;
+
+    const row =
+    document.createElement("tr");
+
+    row.innerHTML = `
+        <td>
+            <input
+                type="text"
+                placeholder="Location">
+        </td>
+
+        <td>
+            <textarea
+                placeholder="Issue details"></textarea>
+        </td>
+
+        <td>
+            <input
+                type="text"
+                placeholder="Contact">
+        </td>
+
+        <td class="radio-cell">
+
+            <label class="radio-inline">
+                <input
+                    type="radio"
+                    name="resolved${rowCount}"
+                    value="Yes">
+                Yes
+            </label>
+
+            <label class="radio-inline">
+                <input
+                    type="radio"
+                    name="resolved${rowCount}"
+                    value="No">
+                No
+            </label>
+
+        </td>
+
+        <td>
+            <input
+                type="file"
+                accept="image/*"
+                capture="environment">
+        </td>
+    `;
+
+    table.appendChild(row);
+
+}
+/* SIGNATURE PAD */
+
+const canvas =
+document.getElementById("signaturePad");
+
+let signatureUsed = false;
+
+if (!canvas) {
+    console.error("Signature pad not found");
+}
+
+const ctx =
+canvas.getContext("2d");
+
+let drawing = false;
+
+function getPosition(event) {
+
+    const rect =
+    canvas.getBoundingClientRect();
+
+    const touch =
+    event.touches
+        ? event.touches[0]
+        : event;
+
+    return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+    };
+
+}
+
+function startDrawing(event) {
+
+    drawing = true;
+
+    const pos =
+    getPosition(event);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        pos.x,
+        pos.y
+    );
+
+}
+
+function draw(event) {
+
+    if (!drawing) return;
+
+    event.preventDefault();
+
+    const pos =
+    getPosition(event);
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000";
+
+    ctx.lineTo(
+        pos.x,
+        pos.y
+    );
+
+    ctx.stroke();
+
+    signatureUsed = true;
+
+}
+
+function stopDrawing() {
+
+    drawing = false;
+
+}
+
+canvas.addEventListener(
+    "mousedown",
+    startDrawing
+);
+
+canvas.addEventListener(
+    "mousemove",
+    draw
+);
+
+canvas.addEventListener(
+    "mouseup",
+    stopDrawing
+);
+
+canvas.addEventListener(
+    "mouseleave",
+    stopDrawing
+);
+
+canvas.addEventListener(
+    "touchstart",
+    startDrawing
+);
+
+canvas.addEventListener(
+    "touchmove",
+    draw
+);
+
+canvas.addEventListener(
+    "touchend",
+    stopDrawing
+);
+
+function clearSignature() {
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    signatureUsed = false;
+
+}
+/* BASE64 HELPER */
+
+
+
+/* IMAGE COMPRESSION */
+async function compressImage(file){
+    return new Promise((resolve) => {
+
+        if(!file){
+            resolve("");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+
+            const img = new Image();
+
+            img.onload = function(){
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                const maxWidth = 1200;
+                const scale = Math.min(
+                    1,
+                    maxWidth / img.width
+                );
+
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+                resolve(
+                    canvas.toDataURL(
+                        "image/jpeg",
+                        0.8
+                    )
+                );
+            };
+
+            img.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+function fileToBase64(file){
+
+    return new Promise((resolve,reject)=>{
+
+        if(!file){
+            resolve("");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload =
+            e => resolve(e.target.result);
+
+        reader.onerror =
+            reject;
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+/* SAVE AUDIT */
+
+async function saveOutsideAudit() {
+
+    const data = {
+
+        date:
+            document.getElementById("date").value,
+
+        coworkerDetails:
+            document.getElementById("coworkerDetails").value,
+
+        completedAt:
+            new Date().toISOString(),
+
+        auditor:
+            document.getElementById("auditorName").value,
+
+        checks: [],
+
+        issues: []
+
+    };
+
+    /* SAVE CHECKS */
+
+    for (let i = 1; i <= totalQuestions; i++) {
+
+        const selected =
+            document.querySelector(
+                `input[name="check${i}"]:checked`
+            );
+
+        data.checks.push({
+    question: allQuestions[i - 1],
+    result: selected ? selected.value : "",
+    coworker: document.getElementById(`coworker${i}`)?.value || ""
+});
+
+    }
+
+    /* SAVE ISSUES */
+
+    const rows =
+        document.querySelectorAll(
+            "#deviationTable tr"
+        );
+
+    for (let i = 1; i < rows.length; i++) {
+
+        const textInputs =
+            rows[i].querySelectorAll(
+                'input[type="text"]'
+            );
+
+        const issue =
+            rows[i].querySelector(
+                "textarea"
+            );
+
+        const resolved =
+            rows[i].querySelector(
+                'input[type="radio"]:checked'
+            );
+
+        const photo =
+            rows[i].querySelector(
+                'input[type="file"]'
+            );
+
+        data.issues.push({
+
+            location:
+                textInputs[0]?.value || "",
+
+            contact:
+                textInputs[1]?.value || "",
+
+            issue:
+                issue?.value || "",
+
+            resolved:
+                resolved?.value || "",
+
+            photo:
+                await compressImage(
+                    photo?.files[0]
+                )
+
+        });
+
+    }
+
+    localStorage.setItem(
+        "bistro",
+        JSON.stringify(data)
+    );
+
+}
+
+/* CLEAR ALL AUDIT DATA */
+
+function clearAuditData(){
+
+    const keys = [
+
+    "coworker",
+    "restaurant",
+    "bistro",
+   ];
+
+    keys.forEach(key =>
+        localStorage.removeItem(key)
+    );
+
+}
+
+/* DOWNLOAD PDF */
+
+async function downloadPDF() {
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    let y = 20;
+
+    pdf.setFillColor(0,88,163);
+pdf.rect(0,0,210,30,"F");
+
+pdf.setTextColor(255,255,255);
+pdf.setFontSize(20);
+pdf.setFont(undefined,"bold");
+
+pdf.text("SEC CHECK IFS",20,20);
+
+pdf.setTextColor(0,0,0);
+
+y = 40;
+
+    y += 15;
+
+    const auditSections = [
+    { key: "coworker", title: "Co-Worker Restaurant" },
+    { key: "restaurant", title: "Guest Restaurant" },
+    { key: "bistro", title: "Bistro" },
+   ];
+
+let passCount = 0;
+let failCount = 0;
+let naCount = 0;
+
+auditSections.forEach(section => {
+
+    const stored =
+        JSON.parse(localStorage.getItem(section.key));
+
+    if (!stored?.checks) return;
+
+    stored.checks.forEach(question => {
+
+        if (question.result === "PASS") passCount++;
+        if (question.result === "FAIL") failCount++;
+        if (question.result === "N/A") naCount++;
+
+    });
+
+});
+
+pdf.setFontSize(14);
+
+pdf.text(
+    `Pass: ${passCount}`,
+    20,
+    y
+);
+
+y += 8;
+
+pdf.text(
+    `Fail: ${failCount}`,
+    20,
+    y
+);
+
+y += 8;
+
+pdf.text(
+    `N/A: ${naCount}`,
+    20,
+    y
+);
+
+y += 15;
+
+    /* PROCESS ALL AUDIT SECTIONS */
+
+    for (const section of auditSections) {
+
+        const stored = JSON.parse(
+            localStorage.getItem(section.key)
+        );
+
+        if (!stored) continue;
+
+        if (y > 240) {
+            pdf.addPage();
+            y = 20;
+        }
+
+        pdf.setFillColor(0, 88, 163);
+pdf.rect(15, y - 6, 180, 8, "F");
+
+pdf.setTextColor(255,255,255);
+pdf.setFontSize(14);
+pdf.setFont(undefined,"bold");
+
+pdf.text(section.title,20,y);
+
+pdf.setTextColor(0,0,0);
+
+y += 12;
+
+        pdf.setFont(undefined, "normal");
+        pdf.setFontSize(10);
+
+        /* CHECKS */
+
+        stored.checks.forEach((check, index) => {
+
+    if (y > 265) {
+        pdf.addPage();
+        y = 20;
+    }
+
+    const question =
+    `${index + 1}. ${check.question || ""}`;
+
+    const result = check.result || "N/A";
+   
+
+    pdf.setFont(undefined, "bold");
+
+    const questionLines =
+        pdf.splitTextToSize(question, 130);
+
+    pdf.text(questionLines, 20, y);
+
+    pdf.setFont(undefined, "normal");
+
+    if (result === "PASS") {
+
+        pdf.setTextColor(0, 128, 0);
+
+    } else if (result === "FAIL") {
+
+        pdf.setTextColor(220, 0, 0);
+
+    } else {
+
+        pdf.setTextColor(100, 100, 100);
+
+    }
+
+    pdf.text(result, 165, y);
+
+    pdf.setTextColor(0, 0, 0);
+
+    y += (questionLines.length * 5) + 2;
+
+});
+
+        /* ISSUES */
+
+        if (stored.issues?.length) {
+
+            y += 4;
+
+            pdf.setFont(undefined, "bold");
+
+            pdf.text(
+                "Issues / Observations",
+                20,
+                y
+            );
+
+            y += 8;
+
+            pdf.setFont(undefined, "normal");
+
+            for (const issue of stored.issues) {
+
+                const hasData =
+                    issue.location ||
+                    issue.issue ||
+                    issue.contact ||
+                    issue.resolved ||
+                    issue.photo;
+
+                if (!hasData) continue;
+
+                if (y > 220) {
+                    pdf.addPage();
+                    y = 20;
+                }
+
+                if (issue.location) {
+
+                    pdf.text(
+                        `Location: ${issue.location}`,
+                        25,
+                        y
+                    );
+
+                    y += 6;
+                }
+
+                if (issue.issue) {
+
+                    const lines =
+                        pdf.splitTextToSize(
+                            `Issue: ${issue.issue}`,
+                            160
+                        );
+
+                    pdf.text(
+                        lines,
+                        25,
+                        y
+                    );
+
+                    y += lines.length * 5;
+                }
+
+                if (issue.contact) {
+
+                    pdf.text(
+                        `Contact: ${issue.contact}`,
+                        25,
+                        y
+                    );
+
+                    y += 6;
+                }
+
+                if (issue.resolved) {
+
+                    pdf.text(
+                        `Resolved: ${issue.resolved}`,
+                        25,
+                        y
+                    );
+
+                    y += 6;
+                }
+
+                if (issue.photo) {
+
+                    try {
+
+                        if (y + 50 > 270) {
+                            pdf.addPage();
+                            y = 20;
+                        }
+
+                        let imgType = "JPEG";
+
+if (
+    issue.photo.startsWith(
+        "data:image/png"
+    )
+) {
+    imgType = "PNG";
+}
+
+                        pdf.addImage(
+                            issue.photo,
+                            imgType,
+                            25,
+                            y,
+                            60,
+                            45
+                        );
+
+                        y += 50;
+
+                    } catch (err) {
+
+                        console.error(
+                            "Failed image:",
+                            err
+                        );
+
+                        pdf.text(
+                            "[Photo unavailable]",
+                            25,
+                            y
+                        );
+
+                        y += 10;
+                    }
+                }
+
+                y += 5;
+            }
+        }
+
+        y += 10;
+    }
+
+    /* FINAL PAGE */
+
+    pdf.addPage();
+
+    let finalY = 20;
+
+   
+
+    pdf.setFont(undefined, "normal");
+    pdf.setFontSize(12);
+
+    const auditorName =
+        document.getElementById(
+            "auditorName"
+        ).value || "";
+
+    const auditDate =
+        document.getElementById(
+            "date"
+        ).value;
+
+const coworkerNames = [];
+
+auditSections.forEach(section => {
+
+    const stored = JSON.parse(
+        localStorage.getItem(section.key)
+    );
+
+    if (!stored?.checks) return;
+
+    stored.checks.forEach(check => {
+
+        if (
+            check.coworker &&
+            !coworkerNames.includes(check.coworker)
+        ) {
+            coworkerNames.push(check.coworker);
+        }
+
+    });
+
+});
+
+    
+pdf.setFont(undefined, "bold");
+pdf.text("Named Co-Workers & Other Details", 20, finalY);
+finalY += 8;
+
+auditSections.forEach(section => {
+
+    const stored = JSON.parse(
+        localStorage.getItem(section.key)
+    );
+
+    if (stored?.coworkerDetails?.trim()) {
+
+        pdf.setFont(undefined, "bold");
+        pdf.text(`${section.title}:`, 20, finalY);
+        finalY += 6;
+
+        pdf.setFont(undefined, "normal");
+
+        const lines = pdf.splitTextToSize(
+            stored.coworkerDetails,
+            170
+        );
+
+        pdf.text(lines, 25, finalY);
+
+        finalY += (lines.length * 5) + 8;
+    }
+});
+
+pdf.text(
+        `Auditor Name: ${auditorName}`,
+        20,
+        finalY
+    );
+
+    finalY += 10;
+
+    pdf.text(
+        `Audit Date: ${auditDate}`,
+        20,
+        finalY
+    );
+
+    finalY += 15;
+
+
+
+    pdf.setFont(undefined, "normal");
+
+    coworkerNames.forEach(name => {
+
+        pdf.text(
+            `• ${name}`,
+            25,
+            finalY
+        );
+
+        finalY += 6;
+
+    });
+
+    finalY += 5;
+
+    try {
+
+        const signatureImage =
+            document
+                .getElementById(
+                    "signaturePad"
+                )
+                .toDataURL("image/png");
+
+        pdf.text(
+            "Auditor Signature:",
+            20,
+            finalY
+        );
+
+        finalY += 5;
+
+        pdf.addImage(
+            signatureImage,
+            "PNG",
+            20,
+            finalY,
+            80,
+            30
+        );
+
+    } catch (err) {
+
+        console.warn(
+            "Unable to add signature",
+            err
+        );
+    }
+
+    finalY += 40;
+
+    pdf.text(
+        `Generated: ${new Date().toLocaleString()}`,
+        20,
+        finalY
+    );
+
+    /* SAVE PDF */
+
+    pdf.save(
+        `SEC CHECK_IFS_${auditDate}.pdf`
+    );
+
+    /* CLEANUP */
+
+    setTimeout(() => {
+
+        clearAuditData();
+        clearSignature();
+
+        alert(
+            "Audit completed. PDF downloaded and audit data cleared."
+        );
+
+        location.reload();
+
+        }, 1000);
+
+}
+
+/* COMPLETE AUDIT & DOWNLOAD */
+
+async function completeAuditAndDownload() {
+
+    if (!signatureUsed) {
+        alert("Please provide a signature.");
+        return;
+    }
+
+    const auditorName =
+        document.getElementById(
+            "auditorName"
+        ).value.trim();
+
+    if (!auditorName) {
+
+        alert(
+            "Please enter auditor name."
+        );
+
+        return;
+    }
+
+    await saveOutsideAudit();
+    await downloadPDF();
+
+}
+</script>
+
+</body>
+</html>

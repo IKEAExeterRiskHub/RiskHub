@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Audit Dashboard</title>
+
+<style>
+/* Logo */
+.logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 60px;
+    width: auto;
+    z-index: 1000;
+}
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#0058A3;
+    color:white;
+    text-align:center;
+}
+
+header{
+    background:#FFDA1A;
+    color:#0058A3;
+    padding:20px;
+    font-size:32px;
+    font-weight:bold;
+}
+
+#progressContainer{
+    width:80%;
+    max-width:500px;
+    margin:20px auto;
+}
+
+#auditProgress{
+    width:100%;
+    height:25px;
+}
+
+.btn,
+#printBtn{
+    width:220px;
+    min-height:70px;
+    background:#FFDA1A;
+    color:#0058A3;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.btn:hover,
+#printBtn:hover:not(:disabled){
+    background:#fff;
+    transform:translateY(-2px);
+}
+
+#printBtn{
+    display:block;
+    margin:20px auto;
+}
+
+#printBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:20px;
+    padding:40px 20px;
+}
+
+/* Modal */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    z-index:9999;
+}
+
+.modal-content{
+    background:#fff;
+    color:#333;
+    width:700px;
+    max-width:95%;
+    margin:40px auto;
+    padding:25px;
+    border-radius:10px;
+    text-align:left;
+}
+
+.modal-content h2{
+    color:#0058A3;
+    margin-top:0;
+}
+
+.modal-content label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+.modal-content input{
+    width:100%;
+    padding:10px;
+    margin-bottom:15px;
+    box-sizing:border-box;
+}
+
+#signaturePad{
+    width:100%;
+    background:white;
+    border:1px solid #ccc;
+}
+
+.modal-buttons{
+    text-align:right;
+    margin-top:15px;
+}
+
+.modal-buttons button{
+    margin-left:10px;
+}
+
+@media(max-width:768px){
+
+    .btn,
+    #printBtn{
+        width:90%;
+    }
+
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+<header>SEC Check FullServe & Recovery</header>
+<img src="../logo.webp" alt="BR&C Logo" class="logo"> 
+<div id="progressContainer">
+
+    <h3>Audit Progress</h3>
+
+    <progress
+        id="auditProgress"
+        value="0"
+        max="100">
+    </progress>
+
+    <p id="progressText">
+        0% Complete
+    </p>
+
+</div>
+
+<button
+    id="printBtn"
+    onclick="openSignOffModal()">
+
+    Print Final Audit PDF
+
+</button>
+
+<div class="container">
+
+    <button
+	id="level1Btn"
+        class="btn"
+        onclick="window.location.href='../SelfServe & Recovery/1.html'">
+
+        Recovery
+
+    </button>
+
+    <button
+	id="level2Btn"
+        class="btn"
+        onclick="window.location.href='../SelfServe & Recovery/2.html'">
+
+        SelfServe
+
+    </button>
+
+
+</div>
+
+<button
+    class="btn"
+    onclick="goBack()">
+
+    Back
+
+</button>
+
+<div id="signOffModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Audit Sign-Off</h2>
+
+        <label>Auditor Name</label>
+        <input
+            type="text"
+            id="auditorName">
+
+        <label>Signature</label>
+
+        <canvas
+            id="signaturePad"
+            width="600"
+            height="180">
+        </canvas>
+
+        <div class="modal-buttons">
+
+            <button
+                class="btn"
+                onclick="clearSignature()">
+                Clear
+            </button>
+
+            <button
+                class="btn"
+                onclick="closeSignOffModal()">
+                Cancel
+            </button>
+
+            <button
+                class="btn"
+                onclick="generateFinalAudit()">
+                Generate PDF
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const TOTAL_PAGES = 2;
+
+function updateProgress() {
+
+    const completed =
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
+
+    const count = completed.length;
+
+    const percentage =
+        Math.round((count / TOTAL_PAGES) * 100);
+
+    document.getElementById("auditProgress").value =
+        percentage;
+
+    document.getElementById("progressText").textContent =
+        `${count}/${TOTAL_PAGES} Audits Complete (${percentage}%)`;
+
+    const printBtn =
+        document.getElementById("printBtn");
+
+    if (count === TOTAL_PAGES) {
+
+        printBtn.disabled = false;
+        printBtn.style.background = "#28a745";
+        printBtn.style.color = "#ffffff";
+
+    } else {
+
+        printBtn.disabled = true;
+        printBtn.style.background = "#FFDA1A";
+        printBtn.style.color = "#0058A3";
+    }
+
+    updateLevelButtons();
+}
+
+function updateLevelButtons() {
+    const completed =
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
+
+   const buttonMap = {
+    1: "level1Btn",
+    2: "level2Btn"
+};
+
+    Object.keys(buttonMap).forEach(cab => {
+        const btn = document.getElementById(buttonMap[cab]);
+        if (!btn) return;
+
+        if (completed.includes(cab)) {
+            btn.style.background = "#28a745";
+            btn.style.color = "#ffffff";
+        } else {
+            btn.style.background = "#FFDA1A";
+            btn.style.color = "#0058A3";
+        }
+    });
+}  
+
+
+function buildChecksTable(data){
+
+    if(
+        !data ||
+        !data.checks ||
+        !data.checks.length
+    ){
+        return "<p>No audit data recorded.</p>";
+    }
+
+    return `
+        <table style="width:100%;border-collapse:collapse;">
+            <tr>
+                <th style="border:1px solid #ccc;padding:8px;background:#FFDA1A;color:#0058A3;">Question</th>
+                <th style="border:1px solid #ccc;padding:8px;background:#FFDA1A;color:#0058A3;">Result</th>
+            </tr>
+            ${data.checks.map(c => `
+                <tr>
+                    <td style="border:1px solid #ccc;padding:8px;">
+                        ${c.question || ""}
+                    </td>
+                    <td style="border:1px solid #ccc;padding:8px;">
+                        ${c.result || ""}
+                    </td>
+                </tr>
+            `).join("")}
+        </table>
+    `;
+}
+
+function openSignOffModal(){
+    document.getElementById("signOffModal").style.display = "block";
+}
+
+function closeSignOffModal(){
+    document.getElementById("signOffModal").style.display = "none";
+}
+
+/* Signature Pad */
+
+const canvas =
+    document.getElementById("signaturePad");
+
+const ctx =
+    canvas.getContext("2d");
+
+let drawing = false;
+
+function getPosition(e){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    if(e.touches){
+
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function startDrawing(e){
+
+    drawing = true;
+
+    const pos = getPosition(e);
+
+    ctx.beginPath();
+    ctx.moveTo(pos.x,pos.y);
+}
+
+function draw(e){
+
+    if(!drawing) return;
+
+    e.preventDefault();
+
+    const pos = getPosition(e);
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    ctx.lineTo(pos.x,pos.y);
+    ctx.stroke();
+}
+
+function stopDrawing(){
+    drawing=false;
+}
+
+canvas.addEventListener("mousedown",startDrawing);
+canvas.addEventListener("mousemove",draw);
+canvas.addEventListener("mouseup",stopDrawing);
+canvas.addEventListener("mouseleave",stopDrawing);
+
+canvas.addEventListener("touchstart",startDrawing);
+canvas.addEventListener("touchmove",draw);
+canvas.addEventListener("touchend",stopDrawing);
+
+function clearSignature(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+}
+
+async function generateFinalAudit() {
+
+    const auditor =
+        document.getElementById("auditorName")
+        .value
+        .trim();
+
+    if (!auditor) {
+        alert("Please enter auditor name.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const signature =
+        canvas.toDataURL("image/png");
+
+    const l1 =
+        JSON.parse(localStorage.getItem("recovData")) || {};
+
+    const l2 =
+        JSON.parse(localStorage.getItem("selfData")) || {};
+
+
+    
+   const now = new Date();
+
+    const levels = [
+       
+        { title: "Recovery", data:l1 },
+        { title: "SelfServe", data:l2 },
+              
+    ];
+
+    let passCount = 0;
+    let failCount = 0;
+    let issuesCount = 0;
+
+    levels.forEach(level => {
+
+        (level.data.checks || []).forEach(check => {
+
+            if (check.result === "PASS")
+                passCount++;
+
+            if (check.result === "FAIL")
+                failCount++;
+        });
+
+        issuesCount +=
+            (level.data.issues || [])
+            .filter(i =>
+                i.location ||
+                i.issue ||
+                i.contact ||
+                i.photo
+            ).length;
+    });
+
+    const totalChecks =
+        passCount + failCount;
+
+    const compliance =
+        totalChecks > 0
+        ? Math.round(
+            (passCount / totalChecks) * 100
+          )
+        : 0;
+
+    /* COVER PAGE */
+
+    pdf.setFillColor(0, 88, 163);
+    pdf.rect(0, 0, 210, 297, "F");
+
+    pdf.setTextColor(255,255,255);
+
+    pdf.setFontSize(26);
+    pdf.setFont(undefined,"bold");
+
+    pdf.text(
+        "SEC Check SelfServe & Recovery",
+        105,
+        70,
+        { align:"center" }
+    );
+
+    pdf.text(
+        "CHECKLIST AUDIT",
+        105,
+        82,
+        { align:"center" }
+    );
+
+    pdf.setFontSize(14);
+    pdf.setFont(undefined,"normal");
+
+    pdf.text(
+        `Date: ${now.toLocaleDateString()}`,
+        105,
+        120,
+        { align:"center" }
+    );
+
+    pdf.setFontSize(36);
+    pdf.setFont(undefined,"bold");
+
+    pdf.text(
+        `${compliance}%`,
+        105,
+        180,
+        { align:"center" }
+    );
+
+    pdf.setFontSize(14);
+
+    pdf.text(
+        "Overall Compliance",
+        105,
+        192,
+        { align:"center" }
+    );
+
+    /* EXEC SUMMARY */
+
+    pdf.addPage();
+
+    pdf.setTextColor(0,0,0);
+
+    pdf.setFontSize(20);
+    pdf.setFont(undefined,"bold");
+
+    pdf.text(
+        "Executive Summary",
+        15,
+        20
+    );
+
+    pdf.setDrawColor(220);
+    pdf.line(15,25,195,25);
+
+    pdf.setFillColor(230,245,230);
+    pdf.rect(15,35,55,25,"F");
+
+    pdf.setFillColor(255,235,235);
+    pdf.rect(78,35,55,25,"F");
+
+    pdf.setFillColor(255,248,220);
+    pdf.rect(140,35,55,25,"F");
+
+    pdf.setTextColor(0,100,0);
+    pdf.setFontSize(20);
+    pdf.text(String(passCount),42,50);
+
+    pdf.setTextColor(180,0,0);
+    pdf.text(String(failCount),105,50);
+
+    pdf.setTextColor(180,120,0);
+    pdf.text(String(issuesCount),167,50);
+
+    pdf.setFontSize(10);
+
+    pdf.setTextColor(0);
+
+    pdf.text("PASS",40,58);
+    pdf.text("FAIL",103,58);
+    pdf.text("ISSUES",163,58);
+
+    pdf.setFontSize(12);
+
+    let summaryY = 85;
+
+    pdf.text(
+        `Compliance Score: ${compliance}%`,
+        15,
+        summaryY
+    );
+
+    summaryY += 10;
+
+    pdf.text(
+        `Total Audit Checks: ${totalChecks}`,
+        15,
+        summaryY
+    );
+
+    summaryY += 10;
+
+    pdf.text(
+        `Audit Date: ${now.toLocaleString()}`,
+        15,
+        summaryY
+    );
+
+    summaryY += 20;
+
+    const summary =
+        `This SEC Check was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
+
+    const summaryLines =
+        pdf.splitTextToSize(summary,170);
+
+    pdf.text(
+        summaryLines,
+        15,
+        summaryY
+    );
+
+    /* ==========================================
+   FINAL AUDIT SUMMARY
+   ========================================== */
+
+pdf.addPage();
+
+let y = 20;
+let issueCounter = 1;
+
+pdf.setFontSize(20);
+pdf.setFont(undefined, "bold");
+pdf.setTextColor(0, 0, 0);
+pdf.text("FINAL AUDIT SUMMARY", 15, y);
+
+y += 12;
+
+pdf.setDrawColor(220);
+pdf.line(15, y, 195, y);
+
+y += 10;
+
+levels.forEach(level => {
+
+    /* -----------------------------
+       LEVEL HEADER
+    ----------------------------- */
+
+    if (y > 250) {
+        pdf.addPage();
+        y = 20;
+    }
+
+    pdf.setFillColor(0, 88, 163);
+    pdf.rect(10, y, 190, 10, "F");
+
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(14);
+    pdf.setFont(undefined, "bold");
+    pdf.text(level.title, 15, y + 7);
+
+    y += 16;
+
+    /* -----------------------------
+       CHECK RESULTS
+    ----------------------------- */
+
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, "bold");
+
+    pdf.text("Audit Checks", 15, y);
+
+    y += 8;
+
+    (level.data.checks || []).forEach((check, index) => {
+
+        const questionLines = pdf.splitTextToSize(
+            `${index + 1}. ${check.question || ""}`,
+            130
+        );
+
+        const rowHeight =
+            Math.max(
+                10,
+                (questionLines.length * 5) + 2
+            );
+
+        if (y + rowHeight > 270) {
+            pdf.addPage();
+            y = 20;
+        }
+
+        pdf.setDrawColor(220);
+
+        pdf.rect(10, y - 4, 145, rowHeight);
+        pdf.rect(155, y - 4, 40, rowHeight);
+
+        pdf.setTextColor(0);
+        pdf.setFont(undefined, "normal");
+
+        pdf.text(
+            questionLines,
+            13,
+            y
+        );
+
+        if (check.result === "PASS") {
+            pdf.setTextColor(0, 140, 0);
+        } else {
+            pdf.setTextColor(200, 0, 0);
+        }
+
+        pdf.setFont(undefined, "bold");
+        pdf.text(
+            check.result || "",
+            168,
+            y
+        );
+
+        y += rowHeight + 2;
+    });
+
+    y += 5;
+
+    /* -----------------------------
+       ISSUES
+    ----------------------------- */
+
+    const issues =
+        (level.data.issues || []).filter(
+            i =>
+                i.location ||
+                i.contact ||
+                i.issue ||
+                i.photo
+        );
+
+    if (issues.length) {
+
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, "bold");
+        pdf.setTextColor(180, 0, 0);
+
+        pdf.text(
+            "Issues Identified",
+            15,
+            y
+        );
+
+        y += 8;
+
+        issues.forEach(issue => {
+
+            const issueLines =
+                pdf.splitTextToSize(
+                    issue.issue || "",
+                    105
+                );
+
+            const detailsHeight =
+                25 + (issueLines.length * 5);
+
+            const boxHeight =
+                Math.max(
+                    detailsHeight,
+                    55
+                );
+
+            if (y + boxHeight + 10 > 280) {
+                pdf.addPage();
+                y = 20;
+            }
+
+            /* Main issue box */
+
+            pdf.setDrawColor(180);
+            pdf.roundedRect(
+                10,
+                y,
+                185,
+                boxHeight,
+                3,
+                3
+            );
+
+            /* Photo frame */
+
+            pdf.setDrawColor(120);
+
+            pdf.rect(
+                145,
+                y + 5,
+                40,
+                40
+            );
+
+            /* Issue title */
+
+            pdf.setFontSize(11);
+            pdf.setTextColor(0);
+            pdf.setFont(undefined, "bold");
+
+            pdf.text(
+                `Issue #${issueCounter}`,
+                15,
+                y + 8
+            );
+
+            /* Details */
+
+            pdf.setFont(undefined, "normal");
+
+            pdf.text(
+                `Location: ${issue.location || ""}`,
+                15,
+                y + 18
+            );
+
+            pdf.text(
+                `Contact: ${issue.contact || ""}`,
+                15,
+                y + 26
+            );
+
+            pdf.text(
+                "Issue:",
+                15,
+                y + 34
+            );
+
+            pdf.text(
+                issueLines,
+                15,
+                y + 40
+            );
+
+            /* Photo */
+
+            if (issue.photo) {
+
+                try {
+
+                    let format = "JPEG";
+
+                    if (
+                        issue.photo.startsWith(
+                            "data:image/png"
+                        )
+                    ) {
+                        format = "PNG";
+                    }
+
+                    pdf.addImage(
+                        issue.photo,
+                        format,
+                        146,
+                        y + 6,
+                        38,
+                        38
+                    );
+
+                } catch (err) {
+                    console.log(err);
+                }
+
+            } else {
+
+                pdf.setFontSize(8);
+
+                pdf.text(
+                    "NO PHOTO",
+                    155,
+                    y + 27
+                );
+            }
+
+            issueCounter++;
+
+            y += boxHeight + 8;
+        });
+    }
+
+    y += 10;
+});
+    /* SIGN-OFF */
+
+    pdf.addPage();
+
+    pdf.setFontSize(20);
+    pdf.setFont(undefined,"bold");
+    pdf.setTextColor(0, 0, 0);
+
+    pdf.text(
+        "Audit Approval",
+        15,
+        25
+    );
+
+    pdf.addImage(
+        signature,
+        "PNG",
+        20,
+        40,
+        90,
+        35
+    );
+
+    pdf.setFontSize(12);
+    pdf.setFont(undefined,"normal");
+
+    pdf.text(
+        `Auditor: ${auditor}`,
+        20,
+        90
+    );
+
+    pdf.text(
+        `Signed: ${now.toLocaleString()}`,
+        20,
+        100
+    );
+
+    function addFooter(pdf) {
+    const pageCount = pdf.getNumberOfPages();
+
+    for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+
+        pdf.setFontSize(8);
+        pdf.setTextColor(100);
+
+        pdf.text(
+            `Page ${i} of ${pageCount}`,
+            105,
+            290,
+            { align: "center" }
+        );
+    }
+}
+
+    const auditDate =
+        now.getFullYear() +
+        "-" +
+        String(now.getMonth()+1)
+        .padStart(2,"0") +
+        "-" +
+        String(now.getDate())
+        .padStart(2,"0");
+
+addFooter(pdf);
+    pdf.save(
+        `SEC Check_SelfServe_and_Recovery_${auditDate}.pdf`
+    );
+
+// localStorage.removeItem("1Data");
+// localStorage.removeItem("2Data");
+// localStorage.removeItem("completedAuditPages");
+
+    updateProgress();
+    clearSignature();
+    closeSignOffModal();
+
+    alert(
+        "Professional audit report generated successfully."
+    );
+}
+function goBack() {
+    
+    window.location.href = "../which.html";
+}
+
+window.onload = updateProgress;
+window.addEventListener("pageshow", updateProgress);
+
+</script>
+
+</body>
+</html>
