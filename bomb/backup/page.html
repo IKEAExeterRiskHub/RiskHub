@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Bomb Threat Checklist</title>
+
+<style>
+/* Logo */
+.logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 60px;
+    width: auto;
+    z-index: 1000;
+}
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#0058A3;
+    color:white;
+    text-align:center;
+}
+
+header{
+    background:#FFDA1A;
+    color:#0058A3;
+    padding:20px;
+    font-size:32px;
+    font-weight:bold;
+}
+
+#progressContainer{
+    width:80%;
+    max-width:500px;
+    margin:20px auto;
+}
+
+#auditProgress{
+    width:100%;
+    height:25px;
+}
+
+.btn,
+#printBtn{
+    width:220px;
+    min-height:70px;
+    background:#FFDA1A;
+    color:#0058A3;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.btn:hover,
+#printBtn:hover:not(:disabled){
+    background:#fff;
+    transform:translateY(-2px);
+}
+
+#printBtn{
+    display:block;
+    margin:20px auto;
+}
+
+#printBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:20px;
+    padding:40px 20px;
+}
+
+/* Modal */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    z-index:9999;
+}
+
+.modal-content{
+    background:#fff;
+    color:#333;
+    width:700px;
+    max-width:95%;
+    margin:40px auto;
+    padding:25px;
+    border-radius:10px;
+    text-align:left;
+}
+
+.modal-content h2{
+    color:#0058A3;
+    margin-top:0;
+}
+
+.modal-content label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+.modal-content input{
+    width:100%;
+    padding:10px;
+    margin-bottom:15px;
+    box-sizing:border-box;
+}
+
+#signaturePad{
+    width:100%;
+    background:white;
+    border:1px solid #ccc;
+}
+
+.modal-buttons{
+    text-align:right;
+    margin-top:15px;
+}
+
+.modal-buttons button{
+    margin-left:10px;
+}
+
+@media(max-width:768px){
+
+    .btn,
+    #printBtn{
+        width:90%;
+    }
+
+}
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+<header> Bomb Threat Checklist</header>
+<img src=".../logo.webp" alt="BR&C Logo" class="logo"> 
+<div id="progressContainer">
+
+    <h3>Audit Progress</h3>
+
+    <progress
+        id="auditProgress"
+        value="0"
+        max="100">
+    </progress>
+
+    <p id="progressText">
+        0% Complete
+    </p>
+
+</div>
+
+<button
+    id="printBtn"
+    onclick="openSignOffModal()">
+
+    Print Final Audit PDF
+
+</button>
+
+<div class="container">
+
+    <button
+        class="btn"
+        onclick="window.location.href='0.html'">
+
+        Level 0
+
+    </button>
+
+    <button
+        class="btn"
+        onclick="window.location.href='1.html'">
+
+        Level 1
+
+    </button>
+
+    <button
+        class="btn"
+        onclick="window.location.href='2.html'">
+
+        Level 2
+
+    </button>
+
+
+</div>
+
+<button
+    class="btn"
+    onclick="goBack()">
+
+    Back
+
+</button>
+
+<div id="signOffModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Audit Sign-Off</h2>
+
+        <label>Auditor Name</label>
+        <input
+            type="text"
+            id="auditorName">
+
+        <label>Signature</label>
+
+        <canvas
+            id="signaturePad"
+            width="600"
+            height="180">
+        </canvas>
+
+        <div class="modal-buttons">
+
+            <button
+                class="btn"
+                onclick="clearSignature()">
+                Clear
+            </button>
+
+            <button
+                class="btn"
+                onclick="closeSignOffModal()">
+                Cancel
+            </button>
+
+            <button
+                class="btn"
+                onclick="generateFinalAudit()">
+                Generate PDF
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const TOTAL_PAGES = 3;
+
+function updateProgress(){
+
+    const completed =
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
+
+    const count = completed.length;
+
+    const percentage =
+        Math.round((count / TOTAL_PAGES) * 100);
+
+    document.getElementById("auditProgress").value =
+        percentage;
+
+    document.getElementById("progressText").textContent =
+        `${count}/${TOTAL_PAGES} Audits Complete (${percentage}%)`;
+
+    document.getElementById("printBtn").disabled =
+        count !== TOTAL_PAGES;
+}
+
+function buildChecksTable(data){
+
+    if(
+        !data ||
+        !data.checks ||
+        !data.checks.length
+    ){
+        return "<p>No audit data recorded.</p>";
+    }
+
+    return `
+        <table style="width:100%;border-collapse:collapse;">
+            <tr>
+                <th style="border:1px solid #ccc;padding:8px;background:#FFDA1A;color:#0058A3;">Question</th>
+                <th style="border:1px solid #ccc;padding:8px;background:#FFDA1A;color:#0058A3;">Result</th>
+            </tr>
+            ${data.checks.map(c => `
+                <tr>
+                    <td style="border:1px solid #ccc;padding:8px;">
+                        ${c.question || ""}
+                    </td>
+                    <td style="border:1px solid #ccc;padding:8px;">
+                        ${c.result || ""}
+                    </td>
+                </tr>
+            `).join("")}
+        </table>
+    `;
+}
+
+function openSignOffModal(){
+    document.getElementById("signOffModal").style.display = "block";
+}
+
+function closeSignOffModal(){
+    document.getElementById("signOffModal").style.display = "none";
+}
+
+/* Signature Pad */
+
+const canvas =
+    document.getElementById("signaturePad");
+
+const ctx =
+    canvas.getContext("2d");
+
+let drawing = false;
+
+function getPosition(e){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    if(e.touches){
+
+        return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        };
+    }
+
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function startDrawing(e){
+
+    drawing = true;
+
+    const pos = getPosition(e);
+
+    ctx.beginPath();
+    ctx.moveTo(pos.x,pos.y);
+}
+
+function draw(e){
+
+    if(!drawing) return;
+
+    e.preventDefault();
+
+    const pos = getPosition(e);
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    ctx.lineTo(pos.x,pos.y);
+    ctx.stroke();
+}
+
+function stopDrawing(){
+    drawing=false;
+}
+
+canvas.addEventListener("mousedown",startDrawing);
+canvas.addEventListener("mousemove",draw);
+canvas.addEventListener("mouseup",stopDrawing);
+canvas.addEventListener("mouseleave",stopDrawing);
+
+canvas.addEventListener("touchstart",startDrawing);
+canvas.addEventListener("touchmove",draw);
+canvas.addEventListener("touchend",stopDrawing);
+
+function clearSignature(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+}
+
+function buildIssuesTable(data){
+    if(!data?.issues?.length){
+        return "<p>No issues reported.</p>";
+    }
+
+    return `
+    <table style="width:100%;border-collapse:collapse;">
+        <tr>
+            <th>Location</th>
+            <th>Issue</th>
+            <th>Contact</th>
+            <th>Resolved</th>
+            <th>Photo</th>
+        </tr>
+        ${data.issues.map(i => `
+        <tr>
+            <td>${i.location || ""}</td>
+            <td>${i.issue || ""}</td>
+            <td>${i.contact || ""}</td>
+            <td>${i.resolved || ""}</td>
+            <td>
+                ${i.photo
+    ? `<img src="${i.photo}" style="max-width:120px;max-height:120px;">`
+    : "No Photo"}
+            </td>
+        </tr>
+        `).join("")}
+    </table>`;
+}
+
+async function generateFinalAudit(){
+
+    const auditor =
+        document.getElementById("auditorName")
+        .value
+        .trim();
+
+    if(!auditor){
+        alert("Please enter auditor name.");
+        return;
+    }
+
+    const signature =
+        canvas.toDataURL("image/png");
+
+    const l0 =
+        JSON.parse(localStorage.getItem("0Data")) || {};
+
+    const l1 =
+        JSON.parse(localStorage.getItem("1Data")) || {};
+
+    const l2 =
+        JSON.parse(localStorage.getItem("2Data")) || {};
+
+    const now = new Date();
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf =
+        new jsPDF("p","mm","a4");
+
+    let y = 20;
+
+    pdf.setFillColor(0,88,163);
+    pdf.rect(0,0,210,25,"F");
+
+    pdf.setTextColor(255,255,255);
+    pdf.setFontSize(20);
+    pdf.setFont(undefined,"bold");
+    pdf.text("BOMB THREAT CHECKLIST",20,16);
+
+    pdf.setTextColor(0,0,0);
+
+    y = 40;
+
+    pdf.setFontSize(11);
+    pdf.setFont(undefined,"normal");
+
+    pdf.text(
+        `Date: ${now.toLocaleDateString()}`,
+        20,
+        y
+    );
+
+    y += 7;
+
+    pdf.text(
+        `Time: ${now.toLocaleTimeString()}`,
+        20,
+        y
+    );
+
+    y += 7;
+
+    pdf.text(
+        `Auditor: ${auditor}`,
+        20,
+        y
+    );
+
+    y += 15;
+
+    const sections = [
+        {
+            title:"Level 0",
+            data:l0
+        },
+        {
+            title:"Level 1",
+            data:l1
+        },
+        {
+            title:"Level 2",
+            data:l2
+        }
+    ];
+
+    for(const section of sections){
+
+        if(y > 250){
+            pdf.addPage();
+            y = 20;
+        }
+
+        pdf.setFillColor(0,88,163);
+        pdf.rect(15,y-6,180,8,"F");
+
+        pdf.setTextColor(255,255,255);
+        pdf.setFont(undefined,"bold");
+        pdf.text(section.title,20,y);
+
+        y += 12;
+
+        pdf.setTextColor(0,0,0);
+        pdf.setFont(undefined,"normal");
+
+        if(section.data.checks){
+
+            section.data.checks.forEach(
+                (check,index)=>{
+
+                if(y > 265){
+                    pdf.addPage();
+                    y = 20;
+                }
+
+                const question =
+                    `${index + 1}. ${check.question || ""}`;
+
+                const result =
+                    check.result || "";
+
+                const lines =
+                    pdf.splitTextToSize(
+                        question,
+                        130
+                    );
+
+                pdf.setFont(undefined,"bold");
+                pdf.text(lines,20,y);
+
+                pdf.setFont(undefined,"normal");
+
+                if(result==="PASS"){
+                    pdf.setTextColor(0,150,0);
+                }
+                else if(result==="FAIL"){
+                    pdf.setTextColor(220,0,0);
+                }
+
+                pdf.text(result,165,y);
+
+                pdf.setTextColor(0,0,0);
+
+                y +=
+                    (lines.length * 5) + 3;
+            });
+        }
+
+        y += 5;
+
+        pdf.setFont(undefined,"bold");
+        pdf.text("Issues",20,y);
+
+        y += 8;
+
+        pdf.setFont(undefined,"normal");
+
+        if(section.data.issues){
+
+            for(const issue of section.data.issues){
+
+                if(
+                    !issue.location &&
+                    !issue.issue &&
+                    !issue.contact &&
+                    !issue.resolved &&
+                    !issue.photo
+                ){
+                    continue;
+                }
+
+                if(y > 220){
+                    pdf.addPage();
+                    y = 20;
+                }
+
+                if(issue.location){
+                    pdf.text(
+                        `Location: ${issue.location}`,
+                        25,
+                        y
+                    );
+                    y += 6;
+                }
+
+                if(issue.issue){
+
+                    const lines =
+                        pdf.splitTextToSize(
+                            `Issue: ${issue.issue}`,
+                            160
+                        );
+
+                    pdf.text(
+                        lines,
+                        25,
+                        y
+                    );
+
+                    y +=
+                        (lines.length * 5);
+                }
+
+                if(issue.contact){
+                    pdf.text(
+                        `Contact: ${issue.contact}`,
+                        25,
+                        y
+                    );
+                    y += 6;
+                }
+
+                if(issue.resolved){
+                    pdf.text(
+                        `Resolved: ${issue.resolved}`,
+                        25,
+                        y
+                    );
+                    y += 6;
+                }
+
+                if(issue.photo){
+
+                    try{
+
+                        if(y + 50 > 270){
+                            pdf.addPage();
+                            y = 20;
+                        }
+
+                        let format = "JPEG";
+
+                        if(
+                            issue.photo.startsWith(
+                                "data:image/png"
+                            )
+                        ){
+                            format = "PNG";
+                        }
+
+                        pdf.addImage(
+                            issue.photo,
+                            format,
+                            25,
+                            y,
+                            60,
+                            45
+                        );
+
+                        y += 50;
+
+                    }catch(e){
+
+                        pdf.text(
+                            "[Photo unavailable]",
+                            25,
+                            y
+                        );
+
+                        y += 10;
+                    }
+                }
+
+                y += 6;
+            }
+        }
+
+        y += 10;
+    }
+
+    pdf.addPage();
+
+    pdf.setFont(undefined,"bold");
+    pdf.setFontSize(16);
+
+    pdf.text(
+        "Auditor Sign-Off",
+        20,
+        20
+    );
+
+    pdf.addImage(
+        signature,
+        "PNG",
+        20,
+        30,
+        90,
+        35
+    );
+
+    pdf.setFontSize(11);
+    pdf.setFont(undefined,"normal");
+
+    pdf.text(
+        auditor,
+        20,
+        75
+    );
+
+    pdf.text(
+        now.toLocaleString(),
+        20,
+        85
+    );
+
+    const auditDate =
+    now.getFullYear() + "/" +
+    String(now.getMonth() + 1).padStart(2, "0") + "/" +
+    String(now.getDate()).padStart(2, "0");
+
+pdf.save(
+    `Bomb_Threat_Checklist_${auditDate}.pdf`
+);
+
+    localStorage.removeItem("0Data");
+    localStorage.removeItem("1Data");
+    localStorage.removeItem("2Data");
+    localStorage.removeItem("completedAuditPages");
+
+    updateProgress();
+
+    clearSignature();
+
+    closeSignOffModal();
+
+    alert(
+        "Audit completed and PDF downloaded."
+    );
+}
+
+function goBack() {
+    
+    window.location.href = "../../index.html";
+}
+
+window.onload = updateProgress;
+window.addEventListener("pageshow", updateProgress);
+
+</script>
+
+</body>
+</html>
