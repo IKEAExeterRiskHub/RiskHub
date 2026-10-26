@@ -12,14 +12,61 @@
 <title>Evacuation Bag Audit</title>
 
 <style>
+
+@media (max-width: 768px) {
+    #walks,
+    #walks tbody,
+    #walks tr,
+    #walks td,
+    #walks th {
+        display: block;
+        width: 100%;
+    }
+
+    #walks th {
+        display: none;
+    }
+
+    #walks tr {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    #walks td:first-child {
+        font-weight: bold;
+        text-align: left;
+        margin-bottom: 10px;
+        border: none;
+    }
+
+    #walks td:not(:first-child) {
+        display: inline-block;
+        width: 48%;
+        border: none;
+    }
+
+    #walks input[type="radio"] {
+        transform: scale(1.8);
+    }
+}
+
+#progressWrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 5px 0;
+}
+
 /* Logo */
 .logo {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    height: 60px;
-    width: auto;
-    z-index: 1000;
+    position: relative;
+    display: block;
+    margin: 0 auto 10px auto;
+    height: 50px;
 }
 
 *{
@@ -77,10 +124,10 @@ th{
 }
 
 input,
-textarea{
-    width:100%;
-    padding:6px;
-    box-sizing:border-box;
+textarea,
+button {
+    min-height: 48px;
+    font-size: 16px;
 }
 
 textarea{
