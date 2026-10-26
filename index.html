@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BR&C Audit Hub</title>
+
+<style>
+
+/* Logo */
+.logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 60px;
+    width: auto;
+    z-index: 1000;
+}
+
+body {
+    margin: 0;
+    font-family: Noto IKEA Regular;
+    background-color: #0058A3;
+    color: white;
+    text-align: center;
+}
+
+/* Header */
+header {
+    background-color: #ffdb00;
+    color: #0058A3;
+    padding: 20px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* Button Container */
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 20px;
+}
+
+/* Buttons */
+.btn {
+    width: 220px;
+    min-height: 70px;
+    background-color: #FFDA1A;
+    color: #0058A3;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: white;
+    transform: translateY(-2px);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .btn {
+        width: 90%;
+    }
+}
+</style>
+
+<script>
+
+function resetData() {
+    if (confirm("Are you sure you want to clear all stored audit data? This cannot be undone.")) {
+        localStorage.clear();
+        alert("All stored data has been cleared.");
+        location.reload();
+    }
+}
+
+</script>
+
+</head>
+
+
+<body>
+    <img src="./logo.webp" alt="BR&C Logo" class="logo">
+
+    <header>BR&C Audit Hub</header>
+
+    <div class="container">
+     </div>
+</body>
+
+
+<div class="container">
+
+   
+
+    <button class="btn" onclick="window.location.href='Risk Walks/which.html'">
+        Risk Walks 
+    </button>
+
+    <button class="btn" onclick="window.location.href='SEC Checks/which.html'">
+        SEC Checks
+    </button>
+
+    <button class="btn" onclick="window.location.href='*.html'">
+        Perimeter Walk
+    </button>
+
+    <button class="btn" onclick="window.location.href='secureit/page.html'">
+        Secure-It - Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='Mega/page.html'">
+        Megaphone Audit- Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='panic/page.html'">
+        Panic Alarm Audit - Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='firstaid/page.html'">
+        First Aid Box Audit - Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='ladders/page.html'">
+        Ladders Audit - Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='CAB/page.html'">
+        CabRoom Audit - Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='coshh/page.html'">
+        COSHH Audit - Completed
+    </button>
+
+    <button class="btn" onclick="window.location.href='*.html'">
+        Visitor Pass Audit
+    </button>
+
+ <button class="btn" onclick="window.location.href='bomb/page.html'">
+        Bomb Threat Audit - Completed
+    </button>
+
+ <button class="btn" onclick="window.location.href='evac/which.html'">
+        Evacuations Audit - Completed
+    </button>
+
+<button class="btn" onclick="window.location.href='*.html'">
+        CCTV Audit
+    </button>
+
+ <button class="btn" onclick="window.location.href='*.html'">
+        Key Audit
+    </button>
+
+ <button class="btn" onclick="window.location.href='*.html'">
+        Knife Audit
+    </button>
+
+ <button class="btn" onclick="window.location.href='*.html'">
+        Spot Check
+    </button>
+
+ <button class="btn" onclick="window.location.href='*.html'">
+        Profit & Loss Deparment Checks
+    </button>
+
+</div>
+
+ <button class="btn" onclick="resetData()">
+    Reset Stored Data
+</button>
+
+</body>
+</html>
