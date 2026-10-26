@@ -1,181 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BR&C Audit Hub</title>
-
+<!-- saved from url=(0066)file:///C:/Users/adfai1/OneDrive%20-%20IKEA/Desktop/Shortcuts.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BR&amp;C – Team Hub (Static • One Page)</title>
 <style>
-
-/* Logo */
-.logo {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    height: 60px;
-    width: auto;
-    z-index: 1000;
-}
-
-body {
-    margin: 0;
-    font-family: Noto IKEA Regular;
-    background-color: #0058A3;
-    color: white;
-    text-align: center;
-}
-
-/* Header */
-header {
-    background-color: #ffdb00;
-    color: #0058A3;
-    padding: 20px;
-    font-size: 32px;
-    font-weight: bold;
-}
-
-/* Button Container */
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    padding: 40px 20px;
-}
-
-/* Buttons */
-.btn {
-    width: 220px;
-    min-height: 70px;
-    background-color: #FFDA1A;
-    color: #0058A3;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.btn:hover {
-    background-color: white;
-    transform: translateY(-2px);
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-    .btn {
-        width: 90%;
-    }
-}
+ :root{
+ --ikea-blue:#0058A3;
+ --ikea-yellow:#FFCC00;
+ --bg:#f7f8fa;
+ --card:#ffffff;
+ --text:#1f2d3d;
+ --muted:#6b7a90;
+ --border:#e5e9f2;
+ }
+ *{box-sizing:border-box}
+ html,body{height:100%; margin:0}
+ body{
+ font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+ background: var(--bg);
+ color: var(--text);
+ overflow: auto; /* allow page to scroll; no inner scroll */
+ }
+ header{
+ background: var(--ikea-blue);
+ color: #fff;
+ padding: 12px 16px;
+ border-bottom: 6px solid var(--ikea-yellow);
+ }
+ .wrap{max-width: 1400px; margin: 0 auto; padding: 10px 16px}
+ h1{margin: 0 0 4px; font-weight: 700; font-size: clamp(18px, 2.4vw, 26px)}
+ .subtitle{margin: 0; color: #e7eef7; font-size: clamp(12px, 1.4vw, 14px)}
+ /* One-page layout */
+ main{
+ min-height: calc(100vh - 64px); /* header ~64px */
+ display: flex;
+ flex-direction: column;
+ }
+ .grid{
+ /* fills available space without scrolling */
+ flex: 1 1 auto;
+ overflow: visible;
+ display: grid;
+ grid-auto-flow: dense;
+ grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+ gap: 10px;
+ align-content: start;
+ padding-bottom: 4px;
+ }
+ /* Section card */
+ .section{
+ background: var(--card);
+ border: 1px solid var(--border);
+ border-radius: 12px;
+ display: flex;
+ flex-direction: column;
+ min-height: 120px;
+ /* limit height so the whole grid stays on one page */
+ max-height: none;
+ overflow: visible;
+ }
+ /* Boxed heading */
+ .section__head{
+ border-bottom: 1px solid var(--border);
+ background: #fff;
+ padding: 8px 10px;
+ }
+ .section__title{
+ display: flex; align-items: center; gap: 8px;
+ margin: 0;
+ font-weight: 800;
+ font-size: clamp(13px, 1.5vw, 16px);
+ line-height: 1.2;
+ border: 2px solid var(--border); /* << boxed heading */
+ border-radius: 8px;
+ padding: 6px 8px;
+ background: #fbfcfe;
+ }
+ .section__body{
+ padding: 8px 10px;
+ overflow: visible; /* no inner scroll */
+ }
+ /* Links list */
+ .links{list-style: none; padding:0; margin:0}
+ .links li{
+ margin: 6px 0;
+ padding: 8px 8px;
+ border: 1px solid var(--border);
+ border-radius: 8px;
+ background: #fbfcfe;
+ }
+ .link{
+ text-decoration: none;
+ color: #0b2540;
+ font-weight: 600;
+ font-size: clamp(12px, 1.4vw, 14px);
+ white-space: nowrap;
+ overflow: visible;
+ text-overflow: ellipsis; /* keep it tidy */
+ display: inline-block;
+ max-width: 100%;
+ }
+ .hint{color: var(--muted); font-size: 12px; margin: 6px 0 0}
+ /* Keep header compact on small heights */
+ @media (max-height: 740px){
+ header{padding: 8px 16px}
+ main{min-height: calc(100vh - 52px)}
+ }
 </style>
-
-<script>
-
-function resetData() {
-    if (confirm("Are you sure you want to clear all stored audit data? This cannot be undone.")) {
-        localStorage.clear();
-        alert("All stored data has been cleared.");
-        location.reload();
-    }
-}
-
-</script>
-
 </head>
-
-
 <body>
-    <img src="./logo.webp" alt="BR&C Logo" class="logo">
-
-    <header>BR&C Audit Hub</header>
-
-    <div class="container">
-     </div>
-</body>
-
-
-<div class="container">
-
-   
-
-    <button class="btn" onclick="window.location.href='risk walks/which.html'">
-        Risk Walks - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='SEC Checks/which.html'">
-        SEC Checks
-    </button>
-
-    <button class="btn" onclick="window.location.href='*.html'">
-        Perimeter Walk
-    </button>
-
-    <button class="btn" onclick="window.location.href='secureit/page.html'">
-        Secure-It - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='Mega/page.html'">
-        Megaphone Audit- Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='panic/page.html'">
-        Panic Alarm Audit - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='firstaid/page.html'">
-        First Aid Box Audit - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='ladders/page.html'">
-        Ladders Audit - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='CAB/page.html'">
-        CabRoom Audit - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='coshh/page.html'">
-        COSHH Audit - Completed
-    </button>
-
-    <button class="btn" onclick="window.location.href='*.html'">
-        Visitor Pass Audit
-    </button>
-
- <button class="btn" onclick="window.location.href='bomb/page.html'">
-        Bomb Threat Audit - Completed
-    </button>
-
- <button class="btn" onclick="window.location.href='evac/which.html'">
-        Evacuations Audit - Completed
-    </button>
-
-<button class="btn" onclick="window.location.href='*.html'">
-        CCTV Audit
-    </button>
-
- <button class="btn" onclick="window.location.href='*.html'">
-        Key Audit
-    </button>
-
- <button class="btn" onclick="window.location.href='*.html'">
-        Knife Audit
-    </button>
-
- <button class="btn" onclick="window.location.href='*.html'">
-        Spot Check
-    </button>
-
- <button class="btn" onclick="window.location.href='*.html'">
-        Profit & Loss Deparment Checks
-    </button>
-
-</div>
-
- <button class="btn" onclick="resetData()">
-    Reset Stored Data
-</button>
-
-</body>
-</html>
+<header>
+ <div class="wrap">
+ <h1>Business Risk &amp; Compliance – Team Hub</h1>
+ <p class="subtitle">Read‑only, single‑page view generated from your shortcuts.</p>
+ </div>
+</header>
+<main class="wrap">
+ <div class="grid">
+ <!-- Quick Access -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">⭐ Quick Access</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/01%20-%20Daily%20Forms/01%20-%20Occurence%20Log?csf=1&amp;e=fvx4bI" target="_blank" rel="noopener">Daily Occurence folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/01%20-%20Daily%20Forms/02%20-%20Daily%20Log%20Sheets?csf=1&amp;e=wh4UbQ" target="_blank" rel="noopener">Daily Log folder</a></li>
+ <li><a class="link" href="https://store-capacity.ikea.net/stores" target="_blank" rel="noopener">Store Guest Counter</a></li><li><a class="link" href="https://lobby.ukapps.ingka.com/admin" target="_blank" rel="noopener">Lobby</a></li><li><a class="link" href="https://kronos-en.apps.ikea.com/wfcstatic/applications/navigator/html5/dist/container/index.html?version=8.1.11.1250#/" target="_blank" rel="noopener">Kronos</a></li><li><a class="link" href="https://iweof-my.sharepoint.com/:x:/r/personal/phil_roebuck1_ingka_ikea_com/_layouts/15/Doc.aspx?sourcedoc=%7B17051D2F-1E60-4055-AE5D-B1510AB00525%7D&amp;file=First%20aid%20and%20Fire%20Waden%20cover.xlsx&amp;fromShare=true&amp;action=default&amp;mobileredirect=true" target="_blank" rel="noopener">Fire Warden/First Aid Rota</a></li></ul>
+ </div>
+ </section>
+ <!-- Everyday Tools -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">🧰 Everyday Tools</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://hej.ingka.com/en/" target="_blank" rel="noopener">Hej!</a></li><li><a class="link" href="https://outlook.office.com/mail/safetyandsecurity.exeter.gb@ingka.ikea.com/" target="_blank" rel="noopener">Group Email</a></li>
+ <li><a class="link" href="https://teams.microsoft.com/_" target="_blank" rel="noopener">Teams</a></li><li><a class="link" href="https://icafm.ihost.com/maximo/webclient/login/login.jsp" target="_blank" rel="noopener">Maximo</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:x:/r/teams/o365g_bno_retgb548/_layouts/15/Doc.aspx?sourcedoc=%7BC96DB1F2-FA3E-4902-AAF2-FAA8742B271A%7D&amp;file=CCTV%20Miss%20Scan%20Log%20FY27.xlsx&amp;action=default&amp;mobileredirect=true" target="_blank" rel="noopener">CCTV Mis‑Scan log</a></li>
+ 
+ 
+ 
+ <li><a class="link" href="https://ukapps.ikea.com/Tecken/contractor/548" target="_blank" rel="noopener">Tecken-Contractors</a></li>
+ 
+ </ul>
+ </div>
+ </section>
+ <!-- Daily Checks -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">🗓️ Compliance Checks</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?csf=1&amp;e=dXSown&amp;cid=7da63292%2Dc8dd%2D41f6%2D87af%2Db9c186d06b5b&amp;FolderCTID=0x0120004ABA57D7FAC7624CB62C85EF33F45927&amp;id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F02%20%2D%20Compliance%20and%20Checks&amp;viewid=cafc54e8%2Dfb48%2D4512%2Dbc7c%2D10be902f91a7" target="_blank" rel="noopener">Compliance &amp; Checks folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/02%20-%20Compliance%20and%20Checks/Periodic%20Check%20Tracker?csf=1&amp;e=1RO5ab" target="_blank" rel="noopener">Periodic Checks folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/02%20-%20Compliance%20and%20Checks/Duty%20Responsible%20Paperwork%202026?csf=1&amp;web=1&amp;e=RQ1QE9" target="_blank" rel="noopener">Duty Sheet Archives</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F07%20%2D%20RISK%20TRAINING%20SOPS%20and%20VIDS%2FTest%20Purchase&amp;viewid=cafc54e8%2Dfb48%2D4512%2Dbc7c%2D10be902f91a7" target="_blank" rel="noopener">Test Purchase Folder</a></li><li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F07%20%2D%20RISK%20TRAINING%20SOPS%20and%20VIDS%2FTest%20Purchase&amp;viewid=cafc54e8%2Dfb48%2D4512%2Dbc7c%2D10be902f91a7" target="_blank" rel="noopener">Test Purchase Folder</a></li></ul>
+ </div>
+ </section>
+ <!-- Risk Tasks -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">📈 Risk Tools</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://mhs-548/" target="_blank" rel="noopener">MHS 548</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/03%20-%20Training%20and%20Trackers/02%20-%20Training%20Trackers?csf=1&amp;e=ihIyTk" target="_blank" rel="noopener">Store H&amp;S training trackers</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:x:/r/teams/o365g_bno_retgb548/_layouts/15/Doc.aspx?sourcedoc=%7BC5EA79A7-2786-4F46-8755-E967A59ADA0E%7D&amp;file=Permit%20to%20Work%20Log%20Book%20FY27.xlsx&amp;action=default&amp;mobileredirect=true" target="_blank" rel="noopener">Permit Log Book</a></li>
+ <li><a class="link" href="http://ukapps.ikea.com/LOSTPROPERTYSYSTEM/index.aspx" target="_blank" rel="noopener">Lost Property link</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?csf=1&amp;e=ncHPj5&amp;id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F07%20%2D%20RISK%20TRAINING%20SOPS%20and%20VIDS%2FTest%20Purchase" target="_blank" rel="noopener">Test Purchase Tracker</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/02%20-%20Compliance%20and%20Checks/Stolen%20Stock%20Monitor?csf=1&amp;e=1m6JTP" target="_blank" rel="noopener">Stolen Stock Monitor</a></li>
+ </ul>
+ </div>
+ </section>
+ <!-- Inductions -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">🎓 Inductions</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Exeter%20H%26S%20Induction/H%26S%20videos?csf=1&amp;e=EKTvg7" target="_blank" rel="noopener">Induction Videos</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?csf=1&amp;e=625lFG&amp;id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F03%20-%20Training%20and%20Trackers%2FTraining%20Material" target="_blank" rel="noopener">Training Materials</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?csf=1&amp;e=625lFG&amp;id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F03%20-%20Training%20and%20Trackers" target="_blank" rel="noopener">Training Trackers</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?csf=1&amp;e=625lFG&amp;id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F03%20-%20Training%20and%20Trackers%2FTraining%20Material%2F05%20-%20Dept.%20Spec%20Fire%20sheets" target="_blank" rel="noopener">Dept. Spec. Fire Sheets</a></li>
+ </ul>
+ </div>
+ </section>
+ <!-- CCTV & Investigations -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">🎥 CCTV &amp; Investigations</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://ukapps.ikea.com/RISKTOOLS/CCTVLog.aspx" target="_blank" rel="noopener">CCTV Saved Log</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_all_retgb548/Shared%20Documents/10.%20Duty%20Rota%20%5BJALIA%5D/Accident%20investigation%20packs?csf=1&amp;web=1&amp;e=OQpzO5" target="_blank" rel="noopener">Accident Investigations</a></li><li><a class="link" href="https://ik.merlinx.co.uk/login" target="_blank" rel="noopener">Merlin X</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?csf=1&amp;e=1RO5ab&amp;id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F09%20-%20Investigation%20Folder" target="_blank" rel="noopener">Investigations Folder</a></li>
+ <li><a class="link" href="https://app.uk.auror.co/feed" target="_blank" rel="noopener">Auror - Theft Reporting</a></li></ul>
+ </div>
+ </section>
+ <!-- Printable forms -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">🖨️ Printable forms</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/01%20-%20Daily%20Forms/03%20-%20Fire%20Registers?csf=1&amp;e=w4A0uH" target="_blank" rel="noopener">Fire Registers folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_all_retgb548/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2Fo365g%5Fall%5Fretgb548%2FShared%20Documents%2F10.%20Duty%20Rota%20%5BJALIA%5D" target="_blank" rel="noopener">Duty Rotas folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F02%20-%20Compliance%20and%20Checks%2F01%20-%20Master%20Prints%2FSafe%20Checks" target="_blank" rel="noopener">Safe Checks Folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/teams/o365g_bno_retgb548/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2Fo365g%5Fbno%5Fretgb548%2FShared%20Documents%2FSafety%20%26%20Security%2Fv3%2F02%20-%20Compliance%20and%20Checks%2F01%20-%20Master%20Prints%2FDefib%20Checks" target="_blank" rel="noopener">Defib Checks Folder</a></li>
+ </ul>
+ </div>
+ </section>
+ <!-- Department Forms -->
+ <section class="section">
+ <div class="section__head">
+ <h2 class="section__title">📁 Department Forms</h2>
+ </div>
+ <div class="section__body">
+ <ul class="links">
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/02%20-%20Compliance%20and%20Checks/00%20-%20Archived%20files?csf=1&amp;e=otwlMX" target="_blank" rel="noopener">Risk Archive folder</a></li>
+ <li><a class="link" href="https://iweof.sharepoint.com/:f:/r/teams/o365g_bno_retgb548/Shared%20Documents/Safety%20%26%20Security/v3/01%20-%20Daily%20Forms/01%20-%20Occurence%20Log/Archive?csf=1&amp;e=L8Izo6" target="_blank" rel="noopener">Daily Occurence Archive folder</a></li>
+ </ul>
+ </div>
+ </section>
+ </div>
+</main>
+</body></html>
