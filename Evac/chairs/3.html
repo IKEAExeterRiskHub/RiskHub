@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Evacuation Chair Audit</title>
+
+<style>
+/* Logo */
+.logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 60px;
+    width: auto;
+    z-index: 1000;
+}
+*{
+    font-family:Arial,sans-serif;
+}
+
+body{
+    margin:0;
+    background:#0058A3;
+}
+
+header{
+    position:relative;
+    padding:15px;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    background:white;
+    padding:15px;
+    max-width:900px;
+    margin:auto;
+}
+
+.date-container{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.date-container input{
+    width:180px;
+    margin:auto;
+    display:block;
+    text-align:center;
+}
+
+h2{
+    background:#FFDA1A;
+    padding:8px;
+    text-align:center;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:10px;
+}
+
+td,
+th{
+    border:1px solid black;
+    padding:8px;
+    text-align:center;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:6px;
+    box-sizing:border-box;
+}
+
+textarea{
+    height:60px;
+}
+
+.check{
+    transform:scale(1.2);
+}
+
+.radio-cell{
+    text-align:center;
+}
+
+.radio-inline{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin:0 5px;
+}
+
+#progressWrap{
+    height:20px;
+    background:#ccc;
+    margin:10px 0;
+}
+
+#progress{
+    height:100%;
+    width:0%;
+    background:green;
+    transition:.3s;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+#printBtn,
+#pdfBtn{
+    background:#FFDA1A;
+    color:#0058A3;
+    border:none;
+    font-weight:bold;
+}
+
+#progress {
+    max-width: 100%;
+}
+
+#printBtn:disabled,
+#pdfBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+#nextBtn{
+    background:#0058A3;
+    color:white;
+    border:none;
+    font-weight:bold;
+}
+
+#nextBtn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+canvas{
+    border:2px solid #000;
+    background:#fff;
+    width:100%;
+    max-width:800px;
+}
+header img{
+    max-height:80px;
+    display:block;
+    margin:0 auto 10px auto;
+}
+
+#backBtn{
+    background:#0058A3;
+    color:white;
+    border:none;
+    font-weight:bold;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+</head>
+
+<body>
+
+<header>
+<img src="../logo.webp" alt="BR&C Logo" class="logo">   
+    <h1>
+        Evacuation Chair Audit
+    </h1>
+
+    <div id="timer"></div>
+</header>
+
+<div class="container">
+
+    <div class="date-container">
+
+        <label for="date">
+            <strong>Date</strong>
+        </label>
+
+        <br><br>
+
+        <input
+            type="date"
+            id="date"
+            readonly>
+
+    </div>
+
+<h2>Staircase 2 Level 1</h2>
+
+    <table id="walks">
+
+        <tr>
+
+            <th>
+                Question
+            </th>
+
+            <th>
+    Yes ✔
+</th>
+<th>
+    No ✖
+</th>
+
+        </tr>
+
+    </table>
+
+    <div id="progressWrap">
+
+        <div id="progress"></div>
+
+    </div>
+
+    <h2>
+        Reportable Issues
+        (Complete if required)
+    </h2>
+
+    <table id="deviationTable">
+
+        <tr>
+
+            <th>Location</th>
+            <th>Issue</th>
+            <th>Contact</th>
+            <th>Resolved</th>
+<th>Photo</th>
+
+        </tr>
+
+    </table>
+
+    <button onclick="addDeviation()">
+
+    + Add Issue
+
+</button>
+
+<button
+    id="backBtn"
+    onclick="goBack()">
+
+    Complete
+
+</button>     
+
+</div>
+
+
+<script>
+
+/* DATE */
+
+document.getElementById("date").value =
+new Date().toISOString().split("T")[0];
+
+/* TIMER */
+
+let time = 4 * 60 * 60;
+
+function runTimer(){
+
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
+    const s = time % 60;
+
+    document.getElementById("timer").innerText =
+    `Time remaining: ${h}h ${m}m ${s}s`;
+
+    if(time > 0){
+
+        time--;
+
+        setTimeout(
+            runTimer,
+            1000
+        );
+
+    }else{
+
+        document.getElementById("timer").innerText =
+        "Time Complete";
+
+    }
+
+}
+
+runTimer();
+
+/* QUESTIONS */
+
+const walkChecks = [
+
+    "Is the chair covered?",
+    "Are the rolling bands undamaged and moving correctly?",
+    "Are the wheels undamaged and moving freely?",
+    "Does the seat open with no damage to the hydraulics?",
+    "Does the seats back extend properly?",   
+    "Is the seat belt undamaged and fastened securely?",
+    "Is the chair mounted correctly?",
+
+];
+
+const walkTable =
+document.getElementById("walks");
+
+walkChecks.forEach((question,index) => {
+
+    const row =
+    document.createElement("tr");
+
+    row.innerHTML = `
+        <td>${question}</td>
+
+        <td>
+            <input
+                type="radio"
+                name="check${index + 1}"
+                value="PASS"
+                onchange="progress()">
+        </td>
+
+        <td>
+            <input
+                type="radio"
+                name="check${index + 1}"
+                value="FAIL"
+                onchange="progress()">
+        </td>
+    `;
+
+    walkTable.appendChild(row);
+
+});
+/* PROGRESS */
+
+function progress(){
+
+    let completed = 0;
+
+    for(
+        let i = 1;
+        i <= walkChecks.length;
+        i++
+    ){
+
+        if(
+            document.querySelector(
+                `input[name="check${i}"]:checked`
+            )
+        ){
+            completed++;
+        }
+
+    }
+
+    const percent =
+    (completed / walkChecks.length) * 100;
+
+    document.getElementById("progress").style.width =
+    percent + "%";
+
+    document.getElementById("nextBtn").disabled =
+    completed !== walkChecks.length;
+
+}
+
+/* ADD ISSUE */
+
+function addDeviation(){
+
+    const table =
+    document.getElementById(
+        "deviationTable"
+    );
+
+    const rowCount =
+    table.rows.length;
+
+    const row =
+    document.createElement("tr");
+
+    row.innerHTML = `
+        <td>
+            <input
+                type="text"
+                placeholder="Location">
+        </td>
+
+        <td>
+            <textarea
+                placeholder="Issue details"></textarea>
+        </td>
+
+        <td>
+            <input
+                type="text"
+                placeholder="Contact">
+        </td>
+
+        <td>
+
+            <label class="radio-inline">
+                <input
+                    type="radio"
+                    name="resolved${rowCount}"
+                    value="Yes">
+                Yes
+            </label>
+
+            <label class="radio-inline">
+                <input
+                    type="radio"
+                    name="resolved${rowCount}"
+                    value="No">
+                No
+            </label>
+
+        </td>
+
+        <td>
+
+            <input
+                type="file"
+                accept="image/*"
+                capture="environment">
+
+        </td>
+    `;
+
+    table.appendChild(row);
+
+}
+
+/* SAVE AND CONTINUE */
+
+function fileToBase64(file){
+
+    return new Promise((resolve, reject) => {
+
+        if(!file){
+            resolve("");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = e =>
+            resolve(e.target.result);
+
+        reader.onerror = reject;
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+function markAuditComplete(level) {
+
+    let completedPages =
+        JSON.parse(localStorage.getItem("completedAuditPages")) || [];
+
+    if (!completedPages.includes(level)) {
+
+        completedPages.push(level);
+
+        localStorage.setItem(
+            "completedAuditPages",
+            JSON.stringify(completedPages)
+        );
+    }
+}
+
+
+
+
+async function nextTask(){
+
+    const data = {
+
+        date:
+        document.getElementById("date").value,
+
+        checks: [],
+
+        issues: []
+
+    };
+
+    for(
+        let i = 1;
+        i <= walkChecks.length;
+        i++
+    ){
+
+        const selected =
+        document.querySelector(
+            `input[name="check${i}"]:checked`
+        );
+
+        data.checks.push({
+
+            question:
+            walkChecks[i - 1],
+
+            result:
+            selected?.value || ""
+
+        });
+
+    }
+
+    const rows =
+    document.querySelectorAll(
+        "#deviationTable tr"
+    );
+
+    for(
+        let i = 1;
+        i < rows.length;
+        i++
+    ){
+
+        const textInputs =
+        rows[i].querySelectorAll(
+            'input[type="text"]'
+        );
+
+        const issue =
+        rows[i].querySelector(
+            "textarea"
+        );
+
+        const resolved =
+        rows[i].querySelector(
+            'input[type="radio"]:checked'
+        );
+
+        const photo =
+        rows[i].querySelector(
+            'input[type="file"]'
+        );
+
+        data.issues.push({
+
+    location:
+    textInputs[0]?.value || "",
+
+    contact:
+    textInputs[1]?.value || "",
+
+    issue:
+    issue?.value || "",
+
+    resolved:
+    resolved?.value || "",
+
+    photo:
+    await fileToBase64(
+        photo?.files[0]
+    )
+
+});
+
+} // closes for loop
+
+localStorage.setItem(
+    "3Data",
+    JSON.stringify(data)
+);
+
+markAuditComplete(0);
+
+window.location.href = "3.html";
+
+} // closes nextTask function
+
+function allQuestionsCompleted() {
+    for (let i = 1; i <= walkChecks.length; i++) {
+        if (!document.querySelector(`input[name="check${i}"]:checked`)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+async function goBack() {
+    const data = {
+        date: document.getElementById("date").value,
+        checks: [],
+        issues: []
+    };
+
+    let allAnswered = true;
+
+    // Save checklist answers
+    for (let i = 1; i <= walkChecks.length; i++) {
+        const selected =
+            document.querySelector(`input[name="check${i}"]:checked`);
+
+        if (!selected) {
+            allAnswered = false;
+        }
+
+        data.checks.push({
+            question: walkChecks[i - 1],
+            result: selected ? selected.value : ""
+        });
+    }
+
+    // Save issue table contents
+    const rows = document.querySelectorAll("#deviationTable tr");
+
+    for (let i = 1; i < rows.length; i++) {
+        const textInputs =
+            rows[i].querySelectorAll('input[type="text"]');
+        const issue =
+            rows[i].querySelector("textarea");
+        const resolved =
+            rows[i].querySelector('input[type="radio"]:checked');
+       const photo =
+    rows[i].querySelector('input[type="file"]');
+
+data.issues.push({
+    location: textInputs[0]?.value || "",
+    contact: textInputs[1]?.value || "",
+    issue: issue?.value || "",
+    resolved: resolved?.value || "",
+    photo: await fileToBase64(
+        photo?.files[0]
+    )
+});
+    }
+
+    // Save this page data
+    localStorage.setItem(
+        "3Data",
+        JSON.stringify(data)
+    );
+
+    // Mark audit complete only if all questions answered
+   if (allAnswered) {
+
+    let completedPages =
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
+
+    completedPages = completedPages.filter(
+    p => p !== 3
+);
+completedPages.push(3);
+
+    localStorage.setItem(
+        "completedAuditPages",
+        JSON.stringify(completedPages)
+    );
+}
+
+
+    // Return to dashboard
+    window.location.href = "./page.html";
+}
+
+</script>
+
+</body>
+</html>

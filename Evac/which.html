@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Risk Walks</title>
+
+<style>
+/* Logo */
+.logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 60px;
+    width: auto;
+    z-index: 1000;
+}
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #0058A3;
+    color: white;
+    text-align: center;
+}
+
+header{
+    background:#FFDA1A;
+    color:#0058A3;
+    padding:20px;
+    font-size:32px;
+    font-weight:bold;
+}
+
+.container {
+    margin-top: 40px;
+}
+
+
+
+/* BUTTON STYLE */
+.btn {
+    display: block;
+    width: 300px;
+    margin: 15px auto;
+    padding: 16px;
+    background-color: #FFDA1A;
+    color: #0058A3;
+    font-size: 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: white;
+}
+
+/* SELECTION BOX */
+.selection-box {
+    width: 300px;
+    margin: 15px auto;
+    padding: 5px;
+}
+
+.option-btn {
+    display: inline-block;
+    padding: 12px 18px;
+    margin: 5px;
+    border: 2px solid #FFDA1A;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    background-color: transparent;
+    color: white;
+    min-width: 90px;
+    text-align: center;
+}
+
+.option-btn.selected {
+    background-color: #FFDA1A;
+    color: #0058A3;
+}
+</style>
+</head>
+
+<body>
+
+<header>Evacuations Audit</header>
+<img src="../logo.webp" alt="BR&C Logo" class="logo"> 
+
+<div class="container">
+
+Choose which Audit to Complete, then press start.
+
+    <!-- SHIFT SELECTION -->
+    <div class="selection-box">
+        <div class="option-btn" onclick="selectOption('bag', this)">Evacuation Bag Audit</div>
+        <div class="option-btn" onclick="selectOption('chairs', this)">Evacuation Chairs Audit</div>
+    </div>
+
+    <!-- START BUTTON -->
+    <button class="btn" onclick="goToChecklist()">
+        Start
+    </button>
+
+</div>
+
+<button class="btn" onclick="window.location.href='../index.html'">
+    Back
+</button>
+
+<script>
+
+/* STORE SELECTION */
+let selectedShift = null;
+
+/* BUTTON SELECT FUNCTION */
+function selectOption(value, element) {
+
+    selectedShift = value;
+
+    // Remove previous selection
+    document.querySelectorAll('.selection-box .option-btn')
+        .forEach(btn => btn.classList.remove('selected'));
+
+    element.classList.add('selected');
+}
+
+/* NAVIGATION */
+function goToChecklist() {
+    if (!selectedShift) {
+        alert('Please select bag or chairs');
+        return;
+    }
+
+    if (selectedShift === 'bag') {
+        window.location.href = 'EvacBag/page.html';
+    } else {
+        window.location.href = 'chairs/page.html';
+    }
+}
+</script>
+
+</body>
+</html>
