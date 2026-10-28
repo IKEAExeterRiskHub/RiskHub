@@ -360,6 +360,10 @@ header{
     </button>
 
 
+
+</div>
+
+
 <button
     class="btn"
     onclick="goBack()">
@@ -367,8 +371,6 @@ header{
     Back
 
 </button>
-
-</div>
 
 <div id="signOffModal" class="modal">
 
@@ -681,6 +683,7 @@ async function generateFinalAudit() {
 
     const l20 =
         JSON.parse(localStorage.getItem("20Data")) || {};
+	
 
    const now = new Date();
 
@@ -717,10 +720,10 @@ async function generateFinalAudit() {
 
         (level.data.checks || []).forEach(check => {
 
-            if (check.result === "YES")
+            if (check.result === "PASS")
                 passCount++;
 
-            if (check.result === "NO")
+            if (check.result === "FAIL")
                 failCount++;
         });
 
@@ -755,7 +758,7 @@ async function generateFinalAudit() {
     pdf.setFont(undefined,"bold");
 
     pdf.text(
-        "Evacuation Bag",
+        "Ladders Audit",
         105,
         70,
         { align:"center" }
@@ -838,8 +841,8 @@ async function generateFinalAudit() {
 
     pdf.setTextColor(0);
 
-    pdf.text("YES",40,58);
-    pdf.text("NO",103,58);
+    pdf.text("PASS",40,58);
+    pdf.text("FAIL",103,58);
     pdf.text("ISSUES",163,58);
 
     pdf.setFontSize(12);
@@ -871,7 +874,7 @@ async function generateFinalAudit() {
     summaryY += 20;
 
     const summary =
-        `This Evacuation Chairs Checklist audit was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
+        `This Evacuation Chairs audit was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
 
     const summaryLines =
         pdf.splitTextToSize(summary,170);
@@ -968,7 +971,7 @@ levels.forEach(level => {
             y
         );
 
-        if (check.result === "YES") {
+        if (check.result === "PASS") {
             pdf.setTextColor(0, 140, 0);
         } else {
             pdf.setTextColor(200, 0, 0);
@@ -1212,7 +1215,7 @@ levels.forEach(level => {
         .padStart(2,"0");
 
     pdf.save(
-        `Evacuation_Chairs_Checklist_${auditDate}.pdf`
+        `Ladders Audit_${auditDate}.pdf`
     );
 
     localStorage.removeItem("1Data");
@@ -1247,7 +1250,7 @@ levels.forEach(level => {
 }
 function goBack() {
     
-    window.location.href = "../../audits.html";
+    window.location.href = "../audits.html";
 }
 
 window.onload = updateProgress;
