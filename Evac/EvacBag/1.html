@@ -687,20 +687,12 @@ completedPages.push(1);
     );
 }
 
-
     // Return to dashboard
-async function goBack() {
-
-    document.activeElement?.blur();
-
-    const data = {
-        date: document.getElementById("date").value,
-        checks: [],
-        issues: []
-    };
-
-    // existing code...
+    setTimeout(() => {
+    window.location.href = "./page.html";
+}, 300);
 }
+
 </script>
 
 </body>
