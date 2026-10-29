@@ -94,6 +94,8 @@ textarea{
     text-align:center;
 }
 
+
+
 .radio-inline{
     display:inline-flex;
     align-items:center;
@@ -168,6 +170,9 @@ header img{
     color:white;
     border:none;
     font-weight:bold;
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
 }
 
 </style>
@@ -684,9 +689,18 @@ completedPages.push(1);
 
 
     // Return to dashboard
-    window.location.href = "./page.html";
-}
+async function goBack() {
 
+    document.activeElement?.blur();
+
+    const data = {
+        date: document.getElementById("date").value,
+        checks: [],
+        issues: []
+    };
+
+    // existing code...
+}
 </script>
 
 </body>
