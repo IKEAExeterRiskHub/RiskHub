@@ -516,9 +516,9 @@ function markAuditComplete(level) {
     let completedPages =
         JSON.parse(localStorage.getItem("completedAuditPages")) || [];
 
-    if (!completedPages.includes(level)) {
+    if (!completedPages.includes("1")) {
 
-        completedPages.push(level);
+        completedPages.push("1");
 
         localStorage.setItem(
             "completedAuditPages",
@@ -715,34 +715,28 @@ async function goBack() {
         }
 
         // Save page data
-        const pageNo =
-            window.location.pathname.match(/\d+/)?.[0] || "1";
+const pageNo =
+    window.location.pathname
+        .split("/")
+        .pop()
+        .replace(".html", "");
 
         localStorage.setItem(
             pageNo + "Data",
             JSON.stringify(data)
         );
 
-        // Track completion
-        if (allAnswered) {
+// Track completion
+if (allAnswered) {
 
-            let completedPages =
-                JSON.parse(
-                    localStorage.getItem("completedAuditPages")
-                ) || [];
+    const pageNo =
+        window.location.pathname
+            .split("/")
+            .pop()
+            .replace(".html", "");
 
-            completedPages =
-                completedPages.filter(
-                    p => p !== parseInt(pageNo)
-                );
-
-            completedPages.push(parseInt(pageNo));
-
-            localStorage.setItem(
-                "completedAuditPages",
-                JSON.stringify(completedPages)
-            );
-        }
+    markAuditComplete(pageNo);
+}
 
         // Navigate back
         setTimeout(() => {

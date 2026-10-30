@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Bomb Threat Checklist</title>
+<title>Risk Walk AM</title>
 
 <style>
 /* Logo */
@@ -152,7 +152,7 @@ header{
 
 <body>
 
-<header> Bomb Threat Checklist</header>
+<header> Risk Walk AM</header>
 <img src=".../logo.webp" alt="BR&C Logo" class="logo"> 
 <div id="progressContainer">
 
@@ -183,7 +183,7 @@ header{
 <button
 	id="level1Btn"
         class="btn"
-        onclick="window.location.href='../PM/1.html'">
+        onclick="window.location.href='../AM/1.html'">
 
         Domestic Area
 
@@ -192,7 +192,7 @@ header{
 <button
 	id="level2Btn"
         class="btn"
-        onclick="window.location.href='../PM/2.html'">
+        onclick="window.location.href='../AM/2.html'">
 
         Guest Restaurant
 
@@ -201,7 +201,7 @@ header{
 <button
 	id="level3Btn"
         class="btn"
-        onclick="window.location.href='../PM/3.html'">
+        onclick="window.location.href='../AM/3.html'">
 
         Showrooms
 
@@ -210,7 +210,7 @@ header{
 <button
 	id="level4Btn"
         class="btn"
-        onclick="window.location.href='../PM/4.html'">
+        onclick="window.location.href='../AM/4.html'">
 
         Smaland
 
@@ -219,7 +219,7 @@ header{
 <button
 	id="level5Btn"
         class="btn"
-        onclick="window.location.href='../PM/5.html'">
+        onclick="window.location.href='../AM/5.html'">
 
         Guest Entrance & Lobby
 
@@ -228,7 +228,7 @@ header{
 <button
 	id="level6Btn"
         class="btn"
-        onclick="window.location.href='../PM/6.html'">
+        onclick="window.location.href='../AM/6.html'">
 
         Bistro
 
@@ -237,7 +237,7 @@ header{
 <button
 	id="level7Btn"
         class="btn"
-        onclick="window.location.href='../PM/7.html'">
+        onclick="window.location.href='../AM/7.html'">
 
         Checkouts & Returns
 
@@ -246,7 +246,7 @@ header{
 <button
 	id="level8Btn"
         class="btn"
-        onclick="window.location.href='../PM/8.html'">
+        onclick="window.location.href='../AM/8.html'">
 
         Unit Movements
 
@@ -255,7 +255,7 @@ header{
 <button
 	id="level9Btn"
         class="btn"
-        onclick="window.location.href='../PM/9.html'">
+        onclick="window.location.href='../AM/9.html'">
 
         Click & Collect
 
@@ -264,7 +264,7 @@ header{
 <button
 	id="level10Btn"
         class="btn"
-        onclick="window.location.href='../PM/10.html'">
+        onclick="window.location.href='../AM/10.html'">
 
         Recovery
 
@@ -273,7 +273,7 @@ header{
 <button
 	id="level11Btn"
         class="btn"
-        onclick="window.location.href='../PM/11.html'">
+        onclick="window.location.href='../AM/11.html'">
 
         SelfServe & FullServe
 
@@ -282,7 +282,7 @@ header{
 <button
 	id="level12Btn"
         class="btn"
-        onclick="window.location.href='../PM/12.html'">
+        onclick="window.location.href='../AM/12.html'">
 
         Loading Bay & Recycling Area
 
@@ -291,7 +291,7 @@ header{
 <button
 	id="level13Btn"
         class="btn"
-        onclick="window.location.href='../PM/13.html'">
+        onclick="window.location.href='../AM/13.html'">
 
         Markethall
 
@@ -300,7 +300,7 @@ header{
 <button
         class="btn"
 	id="level14Btn"
-        onclick="window.location.href='../PM/14.html'">
+        onclick="window.location.href='../AM/14.html'">
 
         Outside Area
 
@@ -372,81 +372,29 @@ function updateLevelButtons() {
             localStorage.getItem("completedAuditPages")
         ) || [];
 
-    const level1Btn =
-        document.getElementById("level1Btn");
+    for (let i = 1; i <= 14; i++) {
 
-    const level2Btn =
-        document.getElementById("level2Btn");
+        const btn =
+            document.getElementById(`level${i}Btn`);
 
-    const level3Btn =
-        document.getElementById("level3Btn");
+        if (!btn) continue;
 
-    const level4Btn =
-        document.getElementById("level4Btn");
+        const isComplete =
+            completed.includes(String(i));
 
-    const level5Btn =
-        document.getElementById("level5Btn");
+        btn.style.background =
+            isComplete
+                ? "#28a745"
+                : "#FFDA1A";
 
-    const level6Btn =
-        document.getElementById("level6Btn");
-
-    const level7Btn =
-        document.getElementById("level7Btn");
-
-    const level8Btn =
-        document.getElementById("level8Btn");
-
-    const level9Btn =
-        document.getElementById("level9Btn");
-
-    const level10Btn =
-        document.getElementById("level10Btn");
-
-    const level11Btn =
-        document.getElementById("level11Btn");
-
-    const level12Btn =
-        document.getElementById("level12Btn");
-
-    const level13Btn =
-        document.getElementById("level13Btn");
-
-    const level14Btn =
-        document.getElementById("level14Btn");
-
-    function setButtonColour(btn, level) {
-
-        if (!btn) return;
-
-        if (completed.includes(level) ||
-            completed.includes(Number(level))) {
-
-            btn.style.background = "#28a745";
-            btn.style.color = "#ffffff";
-
-        } else {
-
-            btn.style.background = "#FFDA1A";
-            btn.style.color = "#0058A3";
-        }
+        btn.style.color =
+            isComplete
+                ? "#ffffff"
+                : "#0058A3";
     }
 
-    setButtonColour(level1Btn, "1");
-    setButtonColour(level2Btn, "2");
-    setButtonColour(level3Btn, "3");
-    setButtonColour(level4Btn, "4");
-    setButtonColour(level5Btn, "5");
-    setButtonColour(level6Btn, "6");
-    setButtonColour(level7Btn, "7");
-    setButtonColour(level8Btn, "8");
-    setButtonColour(level9Btn, "9");
-    setButtonColour(level10Btn, "10");
-    setButtonColour(level11Btn, "11");
-    setButtonColour(level12Btn, "12");
-    setButtonColour(level13Btn, "13");
-    setButtonColour(level14Btn, "14");
-}
-function updateProgress(){
+    console.log("Completed Pages:", completed);
+}function updateProgress(){
 
     const completed =
         JSON.parse(
@@ -673,7 +621,7 @@ async function generateFinalAudit() {
     const signature =
         canvas.toDataURL("image/png");
 
-    const l0 =
+    const l1 =
         JSON.parse(localStorage.getItem("1Data")) || {};
 
     const l2 =
@@ -780,7 +728,7 @@ async function generateFinalAudit() {
     pdf.setFont(undefined,"bold");
 
     pdf.text(
-        "RISK WALK PM",
+        "RISK WALK AM",
         105,
         70,
         { align:"center" }
@@ -896,7 +844,7 @@ async function generateFinalAudit() {
     summaryY += 20;
 
     const summary =
-        `This Risk Walk PM Checklist was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
+        `This Risk Walk AM Checklist was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
 
     const summaryLines =
         pdf.splitTextToSize(summary,170);
@@ -1221,7 +1169,7 @@ levels.forEach(level => {
         .padStart(2,"0");
 
     pdf.save(
-        `Risk Walk_${auditDate}_PM.pdf`
+        `Risk Walk_${auditDate}_AM.pdf`
     );
 
     localStorage.removeItem("1Data");

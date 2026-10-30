@@ -512,24 +512,34 @@ function fileToBase64(file) {
     });
 }
 
-function markAuditComplete(level) {
+function markAuditComplete(pageNo) {
 
     let completedPages =
-        JSON.parse(localStorage.getItem("completedAuditPages")) || [];
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
 
-    if (!completedPages.includes(level)) {
+    pageNo = String(pageNo);
 
-        completedPages.push(level);
-
-        localStorage.setItem(
-            "completedAuditPages",
-            JSON.stringify(completedPages)
+    // Remove any existing entry
+    completedPages =
+        completedPages.filter(
+            p => String(p) !== pageNo
         );
-    }
+
+    // Add page
+    completedPages.push(pageNo);
+
+    localStorage.setItem(
+        "completedAuditPages",
+        JSON.stringify(completedPages)
+    );
+
+    console.log(
+        "Saved completed pages:",
+        completedPages
+    );
 }
-
-
-
 
 async function nextTask(){
 
@@ -716,34 +726,28 @@ async function goBack() {
         }
 
         // Save page data
-        const pageNo =
-            window.location.pathname.match(/\d+/)?.[0] || "2";
+const pageNo =
+    window.location.pathname
+        .split("/")
+        .pop()
+        .replace(".html", "");
 
         localStorage.setItem(
             pageNo + "Data",
             JSON.stringify(data)
         );
 
-        // Track completion
-        if (allAnswered) {
+     // Track completion
+if (allAnswered) {
 
-            let completedPages =
-                JSON.parse(
-                    localStorage.getItem("completedAuditPages")
-                ) || [];
+    const pageNo =
+        window.location.pathname
+            .split("/")
+            .pop()
+            .replace(".html", "");
 
-            completedPages =
-                completedPages.filter(
-                    p => p !== parseInt(pageNo)
-                );
-
-            completedPages.push(parseInt(pageNo));
-
-            localStorage.setItem(
-                "completedAuditPages",
-                JSON.stringify(completedPages)
-            );
-        }
+    markAuditComplete(pageNo);
+}
 
         // Navigate back
         setTimeout(() => {
