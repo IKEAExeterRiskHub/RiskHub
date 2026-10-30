@@ -606,85 +606,126 @@ function allQuestionsCompleted() {
 }
 
 async function goBack() {
-    const data = {
-        date: document.getElementById("date").value,
-        checks: [],
-        issues: []
-    };
+    const btn = document.getElementById("backBtn");
 
-    let allAnswered = true;
+    try {
+        // Prevent double taps
+        btn.disabled = true;
+        btn.textContent = "Saving...";
 
-    // Save checklist answers
-    for (let i = 1; i <= walkChecks.length; i++) {
-        const selected =
-            document.querySelector(`input[name="check${i}"]:checked`);
+        // Remove focus from camera/file controls
+        document.activeElement?.blur();
 
-        if (!selected) {
-            allAnswered = false;
+        // Allow mobile browser to finish camera processing
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const data = {
+            date: document.getElementById("date").value,
+            checks: [],
+            issues: []
+        };
+
+        let allAnswered = true;
+
+        // Save checklist responses
+        for (let i = 1; i <= walkChecks.length; i++) {
+            const selected =
+                document.querySelector(`input[name="check${i}"]:checked`);
+
+            if (!selected) {
+                allAnswered = false;
+            }
+
+            data.checks.push({
+                question: walkChecks[i - 1],
+                result: selected ? selected.value : ""
+            });
         }
 
-        data.checks.push({
-            question: walkChecks[i - 1],
-            result: selected ? selected.value : ""
-        });
+        // Save deviations/issues
+        const rows = document.querySelectorAll("#deviationTable tr");
+
+        for (let i = 1; i < rows.length; i++) {
+
+            const textInputs =
+                rows[i].querySelectorAll('input[type="text"]');
+
+            const issue =
+                rows[i].querySelector("textarea");
+
+            const resolved =
+                rows[i].querySelector('input[type="radio"]:checked');
+
+            const photoInput =
+                rows[i].querySelector('input[type="file"]');
+
+            let photoData = null;
+
+            if (photoInput &&
+                photoInput.files &&
+                photoInput.files.length > 0) {
+
+                photoData = await fileToBase64(
+                    photoInput.files[0]
+                );
+            }
+
+            data.issues.push({
+                location: textInputs[0]?.value || "",
+                contact: textInputs[1]?.value || "",
+                issue: issue?.value || "",
+                resolved: resolved?.value || "",
+                photo: photoData
+            });
+        }
+
+        // Save page data
+        const pageNo =
+            window.location.pathname.match(/\d+/)?.[0] || "0";
+
+        localStorage.setItem(
+            pageNo + "Data",
+            JSON.stringify(data)
+        );
+
+        // Track completion
+        if (allAnswered) {
+
+            let completedPages =
+                JSON.parse(
+                    localStorage.getItem("completedAuditPages")
+                ) || [];
+
+            completedPages =
+                completedPages.filter(
+                    p => p !== parseInt(pageNo)
+                );
+
+            completedPages.push(parseInt(pageNo));
+
+            localStorage.setItem(
+                "completedAuditPages",
+                JSON.stringify(completedPages)
+            );
+        }
+
+        // Navigate back
+        setTimeout(() => {
+            window.location.href = "./page.html";
+        }, 250);
+
+    } catch (err) {
+
+        console.error("Save failed:", err);
+
+        alert(
+            "Unable to save the checklist. Please try again."
+        );
+
+        btn.disabled = false;
+        btn.textContent = "Complete";
     }
-
-    // Save issue table contents
-    const rows = document.querySelectorAll("#deviationTable tr");
-
-    for (let i = 1; i < rows.length; i++) {
-        const textInputs =
-            rows[i].querySelectorAll('input[type="text"]');
-        const issue =
-            rows[i].querySelector("textarea");
-        const resolved =
-            rows[i].querySelector('input[type="radio"]:checked');
-       const photo =
-    rows[i].querySelector('input[type="file"]');
-
-data.issues.push({
-    location: textInputs[0]?.value || "",
-    contact: textInputs[1]?.value || "",
-    issue: issue?.value || "",
-    resolved: resolved?.value || "",
-    photo: await fileToBase64(
-        photo?.files[0]
-    )
-});
-    }
-
-    // Save this page data
-    localStorage.setItem(
-        "0Data",
-        JSON.stringify(data)
-    );
-
-    // Mark audit complete only if all questions answered
-   if (allAnswered) {
-
-    let completedPages =
-        JSON.parse(
-            localStorage.getItem("completedAuditPages")
-        ) || [];
-
-    completedPages = completedPages.filter(
-    p => p !== 0
-);
-completedPages.push(0);
-
-    localStorage.setItem(
-        "completedAuditPages",
-        JSON.stringify(completedPages)
-    );
 }
-
-
-    // Return to dashboard
-setTimeout(() => {
-    window.location.href = "./page.html";
-}, 5);
-}
-
 </script>
 
 </body>
