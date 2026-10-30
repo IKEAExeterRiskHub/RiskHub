@@ -9,7 +9,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0">
 
-<title>Panic Alarms Audit</title>
+<title>Panic Alarm Audit</title>
 
 <style>
 /* Logo */
@@ -21,10 +21,15 @@
     width: auto;
     z-index: 1000;
 }
+
 *{
     font-family:Arial,sans-serif;
 }
-
+#backBtn {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+}
 body{
     margin:0;
     background:#0058A3;
@@ -181,7 +186,7 @@ header img{
 <header>
 <img src="../logo.webp" alt="BR&C Logo" class="logo">   
     <h1>
-        Panic Alarms Audit
+        Panic Alarm Audit
     </h1>
 
     <div id="timer"></div>
@@ -204,11 +209,11 @@ header img{
 
     </div>
 
-<h2>Bistro</h2>
+
+    <h2>Smaland</h2>
+
 
     <table id="walks">
-
-<th>Did the panel alarm on ..</th>
 
         <tr>
 
@@ -313,11 +318,9 @@ runTimer();
 
 const walkChecks = [
 
-    "Till 106?",
-    "Till 107?",
-    "Till 108?",
-    "Till 109?",
+    "Did the Alarm trigger?",
 
+             
 ];
 
 const walkTable =
@@ -439,10 +442,10 @@ function addDeviation(){
 
         <td>
 
-            <input
-                type="file"
-                accept="image/*"
-                capture="environment">
+            <input type="file"
+       accept="image/*"
+       capture="environment"
+       onchange="compressPreview(this)">
 
         </td>
     `;
@@ -450,29 +453,60 @@ function addDeviation(){
     table.appendChild(row);
 
 }
+async function compressPreview(input) {
+
+    if (!input.files.length) return;
+
+    const compressed =
+        await fileToBase64(input.files[0]);
+
+    input.compressedImage = compressed;
+}
 
 /* SAVE AND CONTINUE */
 
-function fileToBase64(file){
+function fileToBase64(file) {
 
     return new Promise((resolve, reject) => {
 
-        if(!file){
-            resolve("");
+        if (!file) {
+            resolve(null);
             return;
         }
 
-        const reader = new FileReader();
+        const img = new Image();
 
-        reader.onload = e =>
-            resolve(e.target.result);
+        img.onload = () => {
 
-        reader.onerror = reject;
+            const canvas = document.createElement("canvas");
 
-        reader.readAsDataURL(file);
+            const MAX_WIDTH = 800;
 
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_WIDTH) {
+                height = height * (MAX_WIDTH / width);
+                width = MAX_WIDTH;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // JPEG at 70% quality
+            resolve(
+                canvas.toDataURL("image/jpeg", 0.7)
+            );
+        };
+
+        img.onerror = reject;
+
+        img.src = URL.createObjectURL(file);
     });
-
 }
 
 function markAuditComplete(level) {
@@ -480,9 +514,9 @@ function markAuditComplete(level) {
     let completedPages =
         JSON.parse(localStorage.getItem("completedAuditPages")) || [];
 
-    if (!completedPages.includes(level)) {
+    if (!completedPages.includes("3")) {
 
-        completedPages.push(level);
+        completedPages.push("3");
 
         localStorage.setItem(
             "completedAuditPages",
@@ -605,83 +639,121 @@ function allQuestionsCompleted() {
 }
 
 async function goBack() {
-    const data = {
-        date: document.getElementById("date").value,
-        checks: [],
-        issues: []
-    };
+    const btn = document.getElementById("backBtn");
 
-    let allAnswered = true;
+    try {
+        // Prevent double taps
+        btn.disabled = true;
+        btn.textContent = "Saving...";
 
-    // Save checklist answers
-    for (let i = 1; i <= walkChecks.length; i++) {
-        const selected =
-            document.querySelector(`input[name="check${i}"]:checked`);
+        // Remove focus from camera/file controls
+        document.activeElement?.blur();
 
-        if (!selected) {
-            allAnswered = false;
+        // Allow mobile browser to finish camera processing
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const data = {
+            date: document.getElementById("date").value,
+            checks: [],
+            issues: []
+        };
+
+        let allAnswered = true;
+
+        // Save checklist responses
+        for (let i = 1; i <= walkChecks.length; i++) {
+            const selected =
+                document.querySelector(`input[name="check${i}"]:checked`);
+
+            if (!selected) {
+                allAnswered = false;
+            }
+
+            data.checks.push({
+                question: walkChecks[i - 1],
+                result: selected ? selected.value : ""
+            });
         }
 
-        data.checks.push({
-            question: walkChecks[i - 1],
-            result: selected ? selected.value : ""
-        });
-    }
+        // Save deviations/issues
+        const rows = document.querySelectorAll("#deviationTable tr");
 
-    // Save issue table contents
-    const rows = document.querySelectorAll("#deviationTable tr");
+        for (let i = 1; i < rows.length; i++) {
 
-    for (let i = 1; i < rows.length; i++) {
-        const textInputs =
-            rows[i].querySelectorAll('input[type="text"]');
-        const issue =
-            rows[i].querySelector("textarea");
-        const resolved =
-            rows[i].querySelector('input[type="radio"]:checked');
-       const photo =
-    rows[i].querySelector('input[type="file"]');
+            const textInputs =
+                rows[i].querySelectorAll('input[type="text"]');
 
-data.issues.push({
-    location: textInputs[0]?.value || "",
-    contact: textInputs[1]?.value || "",
-    issue: issue?.value || "",
-    resolved: resolved?.value || "",
-    photo: await fileToBase64(
-        photo?.files[0]
-    )
-});
-    }
+            const issue =
+                rows[i].querySelector("textarea");
 
-    // Save this page data
-    localStorage.setItem(
-        "3Data",
-        JSON.stringify(data)
-    );
+            const resolved =
+                rows[i].querySelector('input[type="radio"]:checked');
 
-    // Mark audit complete only if all questions answered
-   if (allAnswered) {
+            const photoInput =
+                rows[i].querySelector('input[type="file"]');
 
-    let completedPages =
-        JSON.parse(
-            localStorage.getItem("completedAuditPages")
-        ) || [];
+            let photoData = null;
 
-    completedPages = completedPages.filter(
-    p => p !== 3
-);
-completedPages.push(3);
+            if (photoInput &&
+                photoInput.files &&
+                photoInput.files.length > 0) {
 
-    localStorage.setItem(
-        "completedAuditPages",
-        JSON.stringify(completedPages)
-    );
+                photoData = await fileToBase64(
+                    photoInput.files[0]
+                );
+            }
+
+            data.issues.push({
+                location: textInputs[0]?.value || "",
+                contact: textInputs[1]?.value || "",
+                issue: issue?.value || "",
+                resolved: resolved?.value || "",
+                photo: photoData
+            });
+        }
+
+  // Save page data
+const pageNo =
+    window.location.pathname
+        .split("/")
+        .pop()
+        .replace(".html", "");
+
+        localStorage.setItem(
+            pageNo + "Data",
+            JSON.stringify(data)
+        );
+
+     // Track completion
+if (allAnswered) {
+
+    const pageNo =
+        window.location.pathname
+            .split("/")
+            .pop()
+            .replace(".html", "");
+
+    markAuditComplete(pageNo);
 }
 
 
-    // Return to dashboard
-    window.location.href = "./page.html";
-}
+        // Navigate back
+        setTimeout(() => {
+            window.location.href = "./page.html";
+        }, 250);
 
+    } catch (err) {
+
+        console.error("Save failed:", err);
+
+        alert(
+            "Unable to save the checklist. Please try again."
+        );
+
+        btn.disabled = false;
+        btn.textContent = "Complete";
+    }
+}
 </script>
 
 </body>
