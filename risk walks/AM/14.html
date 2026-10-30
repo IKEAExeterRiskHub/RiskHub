@@ -9,7 +9,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0">
 
-<title>AM Risk Walk</title>
+<title>Risk Walk AM</title>
 
 <style>
 /* Logo */
@@ -21,10 +21,15 @@
     width: auto;
     z-index: 1000;
 }
+
 *{
     font-family:Arial,sans-serif;
 }
-
+#backBtn {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+}
 body{
     margin:0;
     background:#0058A3;
@@ -203,9 +208,11 @@ header img{
             readonly>
 
     </div>
-    <h2>Outside Area AM</h2>
 
-   <table id="walks">
+    <h2>Outside Area</h2>
+
+
+    <table id="walks">
 
         <tr>
 
@@ -306,7 +313,6 @@ function runTimer(){
 
 runTimer();
 
-
 /* QUESTIONS */
 
 const walkChecks = [
@@ -317,7 +323,7 @@ const walkChecks = [
     "Are both returns lifts working?",
     "Are the dry riser and fire exit by Unit Movements both free of obstacles?",
     "Is the area free from any other reportable issues?"
-
+             
 ];
 
 const walkTable =
@@ -439,10 +445,10 @@ function addDeviation(){
 
         <td>
 
-            <input
-                type="file"
-                accept="image/*"
-                capture="environment">
+            <input type="file"
+       accept="image/*"
+       capture="environment"
+       onchange="compressPreview(this)">
 
         </td>
     `;
@@ -612,6 +618,7 @@ async function nextTask(){
     )
 
 });
+
 } // closes for loop
 
 localStorage.setItem(

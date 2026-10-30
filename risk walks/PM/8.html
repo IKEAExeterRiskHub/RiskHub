@@ -9,7 +9,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0">
 
-<title>PM Risk Walk</title>
+<title>Risk Walk PM</title>
 
 <style>
 /* Logo */
@@ -21,10 +21,15 @@
     width: auto;
     z-index: 1000;
 }
+
 *{
     font-family:Arial,sans-serif;
 }
-
+#backBtn {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+}
 body{
     margin:0;
     background:#0058A3;
@@ -175,10 +180,11 @@ header img{
 
 
 </head>
+
 <body>
 
 <header>
-<img src="././logo.webp" alt="BR&C Logo" class="logo">    
+<img src="../logo.webp" alt="BR&C Logo" class="logo">   
     <h1>
         Risk Walk PM
     </h1>
@@ -202,9 +208,12 @@ header img{
             readonly>
 
     </div>
-    <h2>Unit Movements PM</h2>
 
-   <table id="walks">
+
+    <h2>Unit Movements</h2>
+
+
+    <table id="walks">
 
         <tr>
 
@@ -305,7 +314,6 @@ function runTimer(){
 
 runTimer();
 
-
 /* QUESTIONS */
 
 const walkChecks = [
@@ -314,7 +322,7 @@ const walkChecks = [
     "Are fire Exit routes clear and free from obstructions??",
     "Are fire doors shut and free from damage??",
     "Is the area free from any other reportable issues?",
-
+             
 ];
 
 const walkTable =
@@ -436,10 +444,10 @@ function addDeviation(){
 
         <td>
 
-            <input
-                type="file"
-                accept="image/*"
-                capture="environment">
+            <input type="file"
+       accept="image/*"
+       capture="environment"
+       onchange="compressPreview(this)">
 
         </td>
     `;
@@ -447,7 +455,6 @@ function addDeviation(){
     table.appendChild(row);
 
 }
-
 async function compressPreview(input) {
 
     if (!input.files.length) return;
@@ -457,6 +464,7 @@ async function compressPreview(input) {
 
     input.compressedImage = compressed;
 }
+
 /* SAVE AND CONTINUE */
 
 function fileToBase64(file) {

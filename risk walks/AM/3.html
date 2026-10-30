@@ -9,7 +9,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0">
 
-<title>Am Risk Walk</title>
+<title>Risk Walk AM</title>
 
 <style>
 /* Logo */
@@ -21,10 +21,15 @@
     width: auto;
     z-index: 1000;
 }
+
 *{
     font-family:Arial,sans-serif;
 }
-
+#backBtn {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+}
 body{
     margin:0;
     background:#0058A3;
@@ -203,7 +208,10 @@ header img{
             readonly>
 
     </div>
-    <h2>Showrooms AM</h2>
+
+
+    <h2>Showrooms</h2>
+
 
     <table id="walks">
 
@@ -306,7 +314,6 @@ function runTimer(){
 
 runTimer();
 
-
 /* QUESTIONS */
 
 const walkChecks = [
@@ -319,7 +326,7 @@ const walkChecks = [
     "Is secure-it in place on all furniture that requires it?",
     "Is the Carpenters Landing area free from stock and obstructions?",
     "Is the area free from any other reportable issues?",
-
+             
 ];
 
 const walkTable =
@@ -441,10 +448,10 @@ function addDeviation(){
 
         <td>
 
-            <input
-                type="file"
-                accept="image/*"
-                capture="environment">
+            <input type="file"
+       accept="image/*"
+       capture="environment"
+       onchange="compressPreview(this)">
 
         </td>
     `;
@@ -452,7 +459,6 @@ function addDeviation(){
     table.appendChild(row);
 
 }
-
 async function compressPreview(input) {
 
     if (!input.files.length) return;
@@ -462,6 +468,7 @@ async function compressPreview(input) {
 
     input.compressedImage = compressed;
 }
+
 /* SAVE AND CONTINUE */
 
 function fileToBase64(file) {
@@ -614,6 +621,7 @@ async function nextTask(){
     )
 
 });
+
 } // closes for loop
 
 localStorage.setItem(
