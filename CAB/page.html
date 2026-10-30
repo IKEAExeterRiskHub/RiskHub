@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Audit Dashboard</title>
+<title>Cab Room Audit</title>
 
 <style>
 /* Logo */
@@ -146,12 +146,13 @@ header{
 }
 
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
 
-<header>Cab Rooms Audit</header>
+<header>Cab Room Audit</header>
 <img src="../logo.webp" alt="BR&C Logo" class="logo"> 
 <div id="progressContainer">
 
@@ -179,70 +180,71 @@ header{
 
 <div class="container">
 
-    <button
-	id="aBtn"
+<button
+	id="level1Btn"
         class="btn"
-        onclick="window.location.href='./a.html'">
+        onclick="window.location.href='../CAB/1.html'">
 
         Cab A
 
-    </button>
+</button>
 
-    <button
-	id="bBtn"
+<button
+	id="level2Btn"
         class="btn"
-        onclick="window.location.href='./b.html'">
+        onclick="window.location.href='../CAB/2.html'">
 
-       Cab B
+        Cab B
 
-    </button>
+</button>
 
-    <button
-	id="cBtn"
+<button
+	id="level3Btn"
         class="btn"
-        onclick="window.location.href='./c.html'">
+        onclick="window.location.href='../CAB/3.html'">
 
        Cab C
 
-    </button>
+</button>
 
 <button
-	id="dBtn"
+	id="level4Btn"
         class="btn"
-        onclick="window.location.href='./d.html'">
+        onclick="window.location.href='../CAB/4.html'">
 
-      Cab D
+        Cab D
 
-    </button>
+</button>
 
 <button
-	id="eBtn"
+	id="level5Btn"
         class="btn"
-        onclick="window.location.href='./e.html'">
+        onclick="window.location.href='../CAB/5.html'">
 
-        Cab E
+       Cab E
 
-    </button>
+</button>
 
-    <button
-	id="fBtn"
+<button
+	id="level6Btn"
         class="btn"
-        onclick="window.location.href='./f.html'">
+        onclick="window.location.href='../CAB/6.html'">
 
         Cab F
 
-    </button>
+</button>
 
-    <button
-	id="gBtn"
+<button
+	id="level7Btn"
         class="btn"
-        onclick="window.location.href='./g.html'">
+        onclick="window.location.href='../CAB/7.html'">
 
         Cab G
 
-    </button>
+</button>
 
-   
+
+</div>
 
 <button
     class="btn"
@@ -251,8 +253,6 @@ header{
     Back
 
 </button>
-
-</div>
 
 <div id="signOffModal" class="modal">
 
@@ -303,7 +303,36 @@ header{
 
 const TOTAL_PAGES = 7;
 
-function updateProgress() {
+function updateLevelButtons() {
+
+    const completed =
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
+
+    for (let i = 1; i <= 14; i++) {
+
+        const btn =
+            document.getElementById(`level${i}Btn`);
+
+        if (!btn) continue;
+
+        const isComplete =
+            completed.includes(String(i));
+
+        btn.style.background =
+            isComplete
+                ? "#28a745"
+                : "#FFDA1A";
+
+        btn.style.color =
+            isComplete
+                ? "#ffffff"
+                : "#0058A3";
+    }
+
+    console.log("Completed Pages:", completed);
+}function updateProgress(){
 
     const completed =
         JSON.parse(
@@ -340,42 +369,8 @@ function updateProgress() {
     updateLevelButtons();
 }
 
-function updateLevelButtons() {
 
-    const completed =
-        JSON.parse(
-            localStorage.getItem("completedAuditPages")
-        ) || [];
-
-    const buttonMap = {
-        a: "aBtn",
-        b: "bBtn",
-        c: "cBtn",
-        d: "dBtn",
-        e: "eBtn",
-        f: "fBtn",
-        g: "gBtn"
-    };
-
-    Object.keys(buttonMap).forEach(cab => {
-
-        const btn =
-            document.getElementById(buttonMap[cab]);
-
-        if (!btn) return;
-
-        if (completed.includes(cab)) {
-
-            btn.style.background = "#28a745";
-            btn.style.color = "#ffffff";
-
-        } else {
-
-            btn.style.background = "#FFDA1A";
-            btn.style.color = "#0058A3";
-        }
-    });
-}function buildChecksTable(data){
+function buildChecksTable(data){
 
     if(
         !data ||
@@ -490,6 +485,62 @@ function clearSignature(){
     );
 }
 
+function buildIssuesTable(data){
+    if(!data?.issues?.length){
+        return "<p>No issues reported.</p>";
+    }
+
+    return `
+    <table style="width:100%;border-collapse:collapse;">
+        <tr>
+            <th>Location</th>
+            <th>Issue</th>
+            <th>Contact</th>
+            <th>Resolved</th>
+            <th>Photo</th>
+        </tr>
+        ${data.issues.map(i => `
+        <tr>
+            <td>${i.location || ""}</td>
+            <td>${i.issue || ""}</td>
+            <td>${i.contact || ""}</td>
+            <td>${i.resolved || ""}</td>
+            <td>
+                ${i.photo
+    ? `<img src="${i.photo}" style="max-width:120px;max-height:120px;">`
+    : "No Photo"}
+            </td>
+        </tr>
+        `).join("")}
+    </table>`;
+}
+
+function addFooter(pdf) {
+    const pages = pdf.getNumberOfPages();
+
+    for (let i = 1; i <= pages; i++) {
+        pdf.setPage(i);
+
+        pdf.setDrawColor(220);
+        pdf.line(10, 285, 200, 285);
+
+        pdf.setFontSize(8);
+        pdf.setTextColor(100);
+
+        pdf.text(
+            "Confidential - Internal Use Only",
+            10,
+            290
+        );
+
+        pdf.text(
+            `Page ${i} of ${pages}`,
+            180,
+            290
+        );
+    }
+}
+
 async function generateFinalAudit() {
 
     const auditor =
@@ -509,32 +560,30 @@ async function generateFinalAudit() {
         canvas.toDataURL("image/png");
 
     const l1 =
-        JSON.parse(localStorage.getItem("cabaData")) || {};
+        JSON.parse(localStorage.getItem("1Data")) || {};
 
     const l2 =
-        JSON.parse(localStorage.getItem("cabbData")) || {};
+        JSON.parse(localStorage.getItem("2Data")) || {};
 
     const l3 =
-        JSON.parse(localStorage.getItem("cabcData")) || {};
-	
+        JSON.parse(localStorage.getItem("3Data")) || {};
+
     const l4 =
-        JSON.parse(localStorage.getItem("cabdData")) || {};
+        JSON.parse(localStorage.getItem("4Data")) || {};
 
     const l5 =
-        JSON.parse(localStorage.getItem("cabeData")) || {};
+        JSON.parse(localStorage.getItem("5Data")) || {};
 
     const l6 =
-        JSON.parse(localStorage.getItem("cabfData")) || {};
+        JSON.parse(localStorage.getItem("6Data")) || {};
 
     const l7 =
-        JSON.parse(localStorage.getItem("cabgData")) || {};
+        JSON.parse(localStorage.getItem("7Data")) || {};
 
     
-
-   const now = new Date();
+    const now = new Date();
 
     const levels = [
-       
         { title: "Cab A", data: l1 },
         { title: "Cab B", data: l2 },
         { title: "Cab C", data: l3 },
@@ -542,7 +591,7 @@ async function generateFinalAudit() {
         { title: "Cab E", data: l5 },
         { title: "Cab F", data: l6 },
         { title: "Cab G", data: l7 },
-              
+ 
     ];
 
     let passCount = 0;
@@ -591,7 +640,7 @@ async function generateFinalAudit() {
     pdf.setFont(undefined,"bold");
 
     pdf.text(
-        "Evacuation Bag",
+        "CAB ROOM AUDIT",
         105,
         70,
         { align:"center" }
@@ -707,7 +756,7 @@ async function generateFinalAudit() {
     summaryY += 20;
 
     const summary =
-        `This Cab Room audit was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
+        `This Cab Room Audit was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
 
     const summaryLines =
         pdf.splitTextToSize(summary,170);
@@ -1020,23 +1069,7 @@ levels.forEach(level => {
         100
     );
 
-    function addFooter(pdf) {
-    const pageCount = pdf.getNumberOfPages();
-
-    for (let i = 1; i <= pageCount; i++) {
-        pdf.setPage(i);
-
-        pdf.setFontSize(8);
-        pdf.setTextColor(100);
-
-        pdf.text(
-            `Page ${i} of ${pageCount}`,
-            105,
-            290,
-            { align: "center" }
-        );
-    }
-}
+    addFooter(pdf);
 
     const auditDate =
         now.getFullYear() +
@@ -1048,16 +1081,16 @@ levels.forEach(level => {
         .padStart(2,"0");
 
     pdf.save(
-        `Cab Rooms_Audit_${auditDate}.pdf`
+        `Cab Room Audit_${auditDate}.pdf`
     );
 
-    localStorage.removeItem("cabaData");
-    localStorage.removeItem("cabbData");
-    localStorage.removeItem("cabcData");
-    localStorage.removeItem("cabdData");
-    localStorage.removeItem("cabeData");
-    localStorage.removeItem("cabfData");
-    localStorage.removeItem("cabgData");
+    localStorage.removeItem("1Data");
+    localStorage.removeItem("2Data");
+    localStorage.removeItem("3Data");
+    localStorage.removeItem("4Data");
+    localStorage.removeItem("5Data");
+    localStorage.removeItem("6Data");
+    localStorage.removeItem("7Data");
     localStorage.removeItem("completedAuditPages");
 
     updateProgress();
