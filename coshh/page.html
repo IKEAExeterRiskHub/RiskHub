@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Audit Dashboard</title>
+<title>COSHH Audit</title>
 
 <style>
 /* Logo */
@@ -146,6 +146,7 @@ header{
 }
 
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
@@ -179,77 +180,77 @@ header{
 
 <div class="container">
 
-    <button
+<button
 	id="level1Btn"
         class="btn"
         onclick="window.location.href='../coshh/1.html'">
 
         Risk (Hoist Room)
 
-    </button>
+</button>
 
-    <button
+<button
 	id="level2Btn"
         class="btn"
         onclick="window.location.href='../coshh/2.html'">
 
         IFS Chemical Cupboard
 
-    </button>
+</button>
 
-    <button
+<button
 	id="level3Btn"
         class="btn"
         onclick="window.location.href='../coshh/3.html'">
 
-        Carpenter Room
+        Carpenters Rooms
 
-    </button>
+</button>
 
 <button
 	id="level4Btn"
         class="btn"
         onclick="window.location.href='../coshh/4.html'">
 
-        Facilites Room
+        Facilities Room
 
-    </button>
+</button>
 
 <button
 	id="level5Btn"
         class="btn"
         onclick="window.location.href='../coshh/5.html'">
 
-        Noonan Room off Loading Bay
+        Noonan's Room off Loading Bay
 
-    </button>
+</button>
 
-    <button
+<button
 	id="level6Btn"
         class="btn"
         onclick="window.location.href='../coshh/6.html'">
 
-        Noonan Room Next to First Aid Room
+        Noonan's Room Next to First Aid Room
 
-    </button>
+</button>
 
-    <button
+<button
 	id="level7Btn"
         class="btn"
         onclick="window.location.href='../coshh/7.html'">
 
-        Bistro stainless steel cabinet
+        Bistro Stainless Steel Cabinet
 
-    </button>
+</button>
 
-    <button
+<button
 	id="level8Btn"
         class="btn"
         onclick="window.location.href='../coshh/8.html'">
 
         IFS Garbage Room
 
-    </button>
+</button>
 
 <button
 	id="level9Btn"
@@ -258,11 +259,10 @@ header{
 
         First Aid Room
 
-    </button>
+</button>
 
 
 </div>
-
 
 <button
     class="btn"
@@ -321,7 +321,36 @@ header{
 
 const TOTAL_PAGES = 9;
 
-function updateProgress() {
+function updateLevelButtons() {
+
+    const completed =
+        JSON.parse(
+            localStorage.getItem("completedAuditPages")
+        ) || [];
+
+    for (let i = 1; i <= 14; i++) {
+
+        const btn =
+            document.getElementById(`level${i}Btn`);
+
+        if (!btn) continue;
+
+        const isComplete =
+            completed.includes(String(i));
+
+        btn.style.background =
+            isComplete
+                ? "#28a745"
+                : "#FFDA1A";
+
+        btn.style.color =
+            isComplete
+                ? "#ffffff"
+                : "#0058A3";
+    }
+
+    console.log("Completed Pages:", completed);
+}function updateProgress(){
 
     const completed =
         JSON.parse(
@@ -358,39 +387,7 @@ function updateProgress() {
     updateLevelButtons();
 }
 
-function updateLevelButtons() {
 
-    const completed =
-        JSON.parse(
-            localStorage.getItem("completedAuditPages")
-        ) || [];
-
-    function setButtonColour(level) {
-
-        const btn =
-            document.getElementById(`level${level}Btn`);
-
-        if (!btn) return;
-
-        if (
-            completed.includes(String(level)) ||
-            completed.includes(level)
-        ) {
-
-            btn.style.background = "#28a745";
-            btn.style.color = "#ffffff";
-
-        } else {
-
-            btn.style.background = "#FFDA1A";
-            btn.style.color = "#0058A3";
-        }
-    }
-
-    for (let i = 0; i < 20; i++) {
-        setButtonColour(i);
-    }
-}
 function buildChecksTable(data){
 
     if(
@@ -506,6 +503,62 @@ function clearSignature(){
     );
 }
 
+function buildIssuesTable(data){
+    if(!data?.issues?.length){
+        return "<p>No issues reported.</p>";
+    }
+
+    return `
+    <table style="width:100%;border-collapse:collapse;">
+        <tr>
+            <th>Location</th>
+            <th>Issue</th>
+            <th>Contact</th>
+            <th>Resolved</th>
+            <th>Photo</th>
+        </tr>
+        ${data.issues.map(i => `
+        <tr>
+            <td>${i.location || ""}</td>
+            <td>${i.issue || ""}</td>
+            <td>${i.contact || ""}</td>
+            <td>${i.resolved || ""}</td>
+            <td>
+                ${i.photo
+    ? `<img src="${i.photo}" style="max-width:120px;max-height:120px;">`
+    : "No Photo"}
+            </td>
+        </tr>
+        `).join("")}
+    </table>`;
+}
+
+function addFooter(pdf) {
+    const pages = pdf.getNumberOfPages();
+
+    for (let i = 1; i <= pages; i++) {
+        pdf.setPage(i);
+
+        pdf.setDrawColor(220);
+        pdf.line(10, 285, 200, 285);
+
+        pdf.setFontSize(8);
+        pdf.setTextColor(100);
+
+        pdf.text(
+            "Confidential - Internal Use Only",
+            10,
+            290
+        );
+
+        pdf.text(
+            `Page ${i} of ${pages}`,
+            180,
+            290
+        );
+    }
+}
+
 async function generateFinalAudit() {
 
     const auditor =
@@ -532,7 +585,7 @@ async function generateFinalAudit() {
 
     const l3 =
         JSON.parse(localStorage.getItem("3Data")) || {};
-	
+
     const l4 =
         JSON.parse(localStorage.getItem("4Data")) || {};
 
@@ -552,17 +605,16 @@ async function generateFinalAudit() {
         JSON.parse(localStorage.getItem("9Data")) || {};
 
    
-   const now = new Date();
+    const now = new Date();
 
     const levels = [
-       
-        { title: "Risk (Hoist Room)", data: l1 },
+        { title: "Domesitc Area", data: l1 },
         { title: "IFS Chemical Cupboard", data: l2 },
-        { title: "Carpenter Room", data: l3 },
-        { title: "Facilites Room", data: l4 },
-        { title: "Noonan Room off Loading Bay", data: l5 },
-        { title: "Noonan Room", data: l6 },
-        { title: "Bistro stainless steel cabinet", data: l7 },
+        { title: "Carpenters Rooms", data: l3 },
+        { title: "Facilities Room", data: l4 },
+        { title: "Noonan's Room off Loading Bay", data: l5 },
+        { title: "Noonan's Room Next to First Aid Room", data: l6 },
+        { title: "Bistro Stainless Steel Cabinet", data: l7 },
         { title: "IFS Garbage Room", data: l8 },
         { title: "First Aid Room", data: l9 },
        
@@ -614,7 +666,7 @@ async function generateFinalAudit() {
     pdf.setFont(undefined,"bold");
 
     pdf.text(
-        "COSHH Audit",
+        "COSHH AUDIT",
         105,
         70,
         { align:"center" }
@@ -730,7 +782,7 @@ async function generateFinalAudit() {
     summaryY += 20;
 
     const summary =
-        `This COSHH audit was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
+        `This COSHH Audit was completed across all audit levels. Overall compliance was ${compliance}%. ${issuesCount} issue(s) were identified and should be reviewed by management for corrective action.`;
 
     const summaryLines =
         pdf.splitTextToSize(summary,170);
@@ -1043,23 +1095,7 @@ levels.forEach(level => {
         100
     );
 
-    function addFooter(pdf) {
-    const pageCount = pdf.getNumberOfPages();
-
-    for (let i = 1; i <= pageCount; i++) {
-        pdf.setPage(i);
-
-        pdf.setFontSize(8);
-        pdf.setTextColor(100);
-
-        pdf.text(
-            `Page ${i} of ${pageCount}`,
-            105,
-            290,
-            { align: "center" }
-        );
-    }
-}
+    addFooter(pdf);
 
     const auditDate =
         now.getFullYear() +
@@ -1071,7 +1107,7 @@ levels.forEach(level => {
         .padStart(2,"0");
 
     pdf.save(
-        `COSHH AUDIT_${auditDate}.pdf`
+        `COSHH Audit_${auditDate}.pdf`
     );
 
     localStorage.removeItem("1Data");
